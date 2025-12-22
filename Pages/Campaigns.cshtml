@@ -1,0 +1,62 @@
+﻿@page
+@model eVybir.Pages.CampaignsModel
+@{
+    Model.SetPageData(ViewData);
+}
+<div>
+    <h1 class="text-center">Реєстрація виборчих подій</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Повна назва</th>
+                <th>Початок голосування</th>
+                <th>Закінчення голосування</th>
+                <th>Дії</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var camp in CampaignsDb.GetCampaigns())
+            {
+                <tr>
+                    <td>@camp.Entity.Name</td>
+                    <td>@camp.Entity.Start</td>
+                    <td>@camp.Entity.End</td>
+                    <td>
+                        <form method="post" asp-page-handler="delete">
+                            <input type="hidden" name="id" value="@camp.Key" />
+                            <input type="button" value="✒️Редагувати" onclick="editCampaign(@camp.Key, '@camp.Entity.Name', '@(camp.Entity.Start.ToString("yyyy-MM-ddThh:mm"))', '@(camp.Entity.End.ToString("yyyy-MM-ddThh:mm"))')" />
+                            <input type="submit" value="❌Видалити" />
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div>
+    <h3>Додати виборчу подію</h3>
+    <form method="post">
+        <input type="hidden" id="camId" name="camId" value="@LoginAwareCrudPage.DEFAULT_ID" />
+        <table class="table-sm">
+            <tr>
+                <td><label for="camName">Повна назва:</label></td>
+                <td><input type="text" id="camName" name="camName" maxlength="200" size="50" required /></td>
+            </tr>
+            <tr>
+                <td><label for="startDate">Початок голосування:</label></td>
+                <td><input type="datetime-local" id="startDate" name="startDate" required /></td>
+            </tr>
+            <tr>
+                <td><label for="endDate">Закінчення голосування:</label></td>
+                <td><input type="datetime-local" id="endDate" name="endDate" required /></td>
+            </tr>
+            <tr>
+                <td class="text-bg-secondary text-warning">Увага! Час зазначено по Києву!</td>
+                <td align="right">
+                    <input type="submit" value="Відправити" />
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>

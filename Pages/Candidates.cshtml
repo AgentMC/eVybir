@@ -1,0 +1,75 @@
+﻿@page
+@model eVybir.Pages.CandidatesModel
+@{
+    Model.SetPageData(ViewData);
+}
+
+<div>
+    <h1 class="text-center">База Кандидатів та Членів Партій чи Груп</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ПІБ чи назва</th>
+                <th>Дата народження чи створення</th>
+                <th>Опис</th>
+                <th>Тип</th>
+                <th>Дії</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var cand in CandidatesDb.GetCandidates())
+            {
+                <tr>
+                    <td>@cand.Entity.Name</td>
+                    <td>@(cand.Entity.Date.HasValue ? cand.Entity.Date.Value.ToShortDateString() : "(Не вказано)")</td>
+                    <td class="ws-pre">@cand.Entity.Description</td>
+                    <td>@cand.Entity.Kind</td>
+                <td>
+                <form method="post" asp-page-handler="delete">
+                    <input type="hidden" name="id" value="@cand.Key" />
+                    <input type="button" value="✒️Редагувати" onclick="editCandidate(@cand.Key, '@cand.Entity.Name', @(cand.Entity.Date.HasValue? "'" + cand.Entity.Date.Value.ToString("yyyy-MM-dd") + "'" : "null"), @cand.Entity.Description.JsEscape(), '@cand.Entity.EntryKind')" />
+                    <input type="submit" value="❌Видалити" />
+                </form>
+                </td>
+            </tr>
+             }
+        </tbody>
+    </table>
+</div>
+
+<div>
+    <h3>Додати кандидата</h3>
+    <form method="post">
+        <input type="hidden" id="candId" name="candId" value="@LoginAwareCrudPage.DEFAULT_ID" />
+        <table class="table-sm">
+            <tr>
+                <td><label for="candName">ПІБ чи назва:</label></td>
+                <td><input type="text" id="candName" name="candName" maxlength="200" size="50" required /></td>
+            </tr>
+            <tr>
+                <td><label for="candDate">Дата народження чи створення:</label></td>
+                <td><input type="date" id="candDate" name="candDate" /></td>
+            </tr>
+            <tr>
+                <td><label for="candDesc">Опис:</label></td>
+                <td><textarea id="candDesc" name="candDesc" width="500" class="w-100" > </textarea> </td>
+            </tr>
+            <tr>
+                <td><label for="candKind">Тип:</label></td>
+                <td>
+                    <select id="candKind" name="candKind">
+                        @foreach (var id in Enum.GetValues<Candidate.EntryType>().Except([Candidate.EntryType.Unknown]))
+                        {
+                            <option value="@id">@Candidate.HumanizeEntryType(id)</option>
+                        }
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" align="right">
+                    <input type="submit" value="Відправити" />
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>

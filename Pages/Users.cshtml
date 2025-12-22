@@ -1,0 +1,76 @@
+﻿@page
+@model UsersModel
+@{
+    Model.SetPageData(ViewData);
+}
+
+<div>
+    <h1 class="text-center">Registered Users</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Ідентифікатор</th>
+                <th>Роль</th>
+                <th>ПІБ</th>
+                <th>Примітки</th>
+                <th>Дії</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in PermissionsDb.GetUsers())
+            {
+                <tr>
+                    <td>@user.Entity.Id</td>
+                    <td>@user.Entity.Role</td>
+                    <td>@user.Entity.Name</td>
+                    <td>@if (!user.Entity.Enabled) { <span class="invalid-feedback d-inline">ЗАБЛОКОВАНО</span> }</td>
+                    <td>
+                        @if (user.Entity.Id != Model.LoginData?.Id)
+                        {
+                            <form method="post" asp-page-handler="toggle">
+                                <input type="hidden" name="id" value="@user.Key" />
+                                <input type="hidden" name="currentState" asp-for="@user.Entity.Enabled" />
+                                @if (user.Entity.Enabled)
+                                {
+                                    <input type="submit" value="⭕Заблокувати" />
+                                }
+                                else
+                                {
+                                    <input type="submit" value="Розблокувати" />
+                                }
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div>
+    <h3>Register a User</h3>
+    <form method="post">
+        <table>
+            <tr>
+                <td><label for="userId">User ID:</label></td>
+                <td><input type="number" id="userId" name="userId" required/></td>
+            </tr>
+            <tr>
+                <td><label for="userRole">User Role:</label></td>
+                <td>
+                    <select id="userRole" name="userRole">
+                        @foreach (var id in Enum.GetValues<Login.AccessLevelCode>().Except([Login.AccessLevelCode.None]))
+                        {
+                            <option value="@id">@Login.HumanizeAccessLevelCode(id)</option>
+                        }
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" align="right">
+                    <input type="submit" value="Submit" />
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
