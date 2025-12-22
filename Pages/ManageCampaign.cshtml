@@ -41,6 +41,49 @@
         <button onclick="switchCampaign()">Перейти</button>
         <hr />
         <script>document.getElementById('topCampaignSelector').value="@Model.CurrentCampaignId"</script>
+        <div class="campaignManagerGrid">
+            <div>
+                <input type="radio" name="filterType" id="radioAll" checked /><label for="radioAll">Всі</label>
+                <input type="radio" name="filterType" id="radioIndividual" /><label for="radioIndividual">Фізичні особи</label>
+                <input type="radio" name="filterType" id="radioGroup" /><label for="radioGroup">Групи та партії</label>
+            </div>
+            <div style="grid-column:2/4;">Кандидати в бюлетені</div>
+            <div>
+                <select multiple size="20" style="overflow:auto;max-width:35vw;">
+                    @foreach (var cand in CandidatesDb.GetCandidates())
+                    {
+                        <option value="@cand.Key">
+                            @cand.Entity.Name
+                            @(cand.Entity.Date.HasValue?'(' + cand.Entity.Date.Value.ToShortDateString() + ')':string.Empty)</option>
+                    }
+                </select>
+            </div>
+            <div>
+                <!--TBD-->
+                <select size="20" style="overflow:auto;width:100%;">
+
+                </select>
+            </div>
+            <div class="d-flex flex-column gap-3 justify-content-center" >
+                <button>Рухати вище⬆️</button>
+                <button>Рухати нижче⬇️</button>
+                <button>Прибрати виділене❌</button>
+                <button>Прибрати все❌</button>
+            </div>
+            <div>
+                <button>Додати як Кандидатів▶️</button>
+                <button>Додати як членів групи⏩</button>
+            </div>
+            <div>
+                <button>Повисити до Кандидата⤴️</button>
+                <button>Понизити до члена групи↪️</button>
+            </div>
+            <div>
+                <form class="w-100 h-100" method="post">
+                    <input type="hidden" name="test-pshe" value="przhe" />
+                    <input type="submit" class="w-100 h-100 fw-bold" value="Зберегти✅" />
+                </form>
+            </div>
+        </div>
     }
 </div>
-TBD: the actual form
