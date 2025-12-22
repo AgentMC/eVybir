@@ -1,0 +1,46 @@
+﻿@page "{id:int?}"
+@model eVybir.Pages.ManageCampaignModel
+@{
+    Model.SetPageData(ViewData);
+}
+
+<div>
+    <h1 class="text-center">Учасники виборчих подій</h1>
+    @if(Model.ShowOnlyList){
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Повна назва</th>
+                    <th>Початок голосування</th>
+                    <th>Закінчення голосування</th>
+                    <th>Перехід</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var camp in Model.Campaigns)
+                {
+                    <tr>
+                        <td>@camp.Entity.Name</td>
+                        <td>@camp.Entity.Start</td>
+                        <td>@camp.Entity.End</td>
+                        <td><a href="@("ManageCampaign/" + camp.Key)">Управляти</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    } 
+    else
+    {
+        <label for="topCampaignSelector">Виборча подія:</label>
+        <select id="topCampaignSelector" name="topCampaignSelector">
+            @foreach (var camp in Model.Campaigns)
+            {
+                <option value="@camp.Key">@camp.Entity.Start.DateTime.ToShortDateString() | @camp.Entity.Name</option>
+            }
+        </select>
+        <button onclick="switchCampaign()">Перейти</button>
+        <hr />
+        <script>document.getElementById('topCampaignSelector').value="@Model.CurrentCampaignId"</script>
+    }
+</div>
+TBD: the actual form

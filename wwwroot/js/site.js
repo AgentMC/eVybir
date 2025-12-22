@@ -16,3 +16,10 @@ function editCampaign(key, name, dateStart, dateEnd) {
     document.getElementById('startDate').value = dateStart;
     document.getElementById('endDate').value = dateEnd;
 }
+
+function switchCampaign() {
+    if (confirm("Зміни на цій сторінці не були збережені!\r\nПерейти на іншу виборчу подію?")) {
+        var selectedCampaignId = document.getElementById('topCampaignSelector').value;
+        location.href = selectedCampaignId;
+    }
+}

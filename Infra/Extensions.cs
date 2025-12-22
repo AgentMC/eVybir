@@ -9,18 +9,30 @@ namespace eVybir.Infra
             public string JsEscape() => System.Text.Json.JsonSerializer.Serialize(input);
         }
 
-        extension(object input)
+        extension(SqlDataReader input)
         {
-            public T? As<T>() where T:class
+            /// <summary>
+            /// Retrieves the value from the <typeparamref name="SqlDataReader"/> and checks for it to be DBNull before casting.
+            /// </summary>
+            /// <typeparam name="T">Returned type. This is expected to be a type nullable (?) modifier. Non-nullable structs will work too, but this method is not designed to work with them.</typeparam>
+            /// <param name="i">Column index of the <typeparamref name="SqlDataReader"/>.</param>
+            /// <returns>If the returned value is not null, returns the value cast to the requested type. 
+            /// If the value is null, and the requested type T is a reference type, returns null.
+            /// If the value is null, and the requested type T is a nullable value type, returns empty (no value) instance.
+            /// If the value is null, and the requested type T is a NON-nullable value type, returns default value for the type.</returns>
+            public T As<T>(int i)
             {
-                if (input == DBNull.Value) return null;
-                return (T)input;
-            }
-
-            public T? AsNS<T>() where T : struct
-            {
-                if (input == DBNull.Value) return null;
-                return (T)input;
+                object value = input[i];
+                if (value is DBNull)
+                {
+#pragma warning disable CS8603 // Possible null reference return.
+                    return default;
+#pragma warning restore CS8603 // Possible null reference return.
+                }
+                else
+                {
+                    return (T)value;
+                }
             }
         }
 

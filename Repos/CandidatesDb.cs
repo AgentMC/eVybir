@@ -12,7 +12,7 @@ namespace eVybir.Repos
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
-                yield return new((int)reader[0], new((string)reader[1], reader[2].AsNS<DateTime>(), reader[3].As<string>(), (Candidate.EntryType)reader[4]));
+                yield return new((int)reader[0], new((string)reader[1], reader.As<DateTime?>(2), reader.As<string?>(3), (Candidate.EntryType)reader[4]));
             }
         }
 

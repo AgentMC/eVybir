@@ -1,20 +1,25 @@
 ﻿using eVybir.Infra;
+using DbCampaigns = System.Collections.Generic.IEnumerable<eVybir.Repos.DbWrapped<int, eVybir.Infra.Campaign>>;
 
 namespace eVybir.Repos
 {
     public static class CampaignsDb
     {
-        public static IEnumerable<DbWrapped<int, Campaign>> GetCampaigns()
+        public static DbCampaigns GetCampaigns(string filter = "")
         {
             using var conn = DbCore.OpenConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = $"select Id, Name, StartTime, EndTime from Campaigns";
+            cmd.CommandText = $"select Id, Name, StartTime, EndTime from Campaigns {filter}";
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
                 yield return new((int)reader[0], new((string)reader[1], (DateTimeOffset)reader[2], (DateTimeOffset)reader[3]));
             }
         }
+        public static DbCampaigns GetFutureCampaigns() => GetCampaigns($"where StartTime > '{DateTime.Now.AddDays(1):O}'");
+        public static DbCampaigns GetActiveCampaigns() => GetCampaigns($"where StartTime <= '{DateTime.Now:O}' and EndTime > '{DateTime.Now:O}'");
+        public static DbCampaigns GetFinishedCampaigns() => GetCampaigns($"where EndTime <= '{DateTime.Now:O}'");
+
 
         public static void AddCampaign(string name, DateTimeOffset start, DateTimeOffset end)
         {
