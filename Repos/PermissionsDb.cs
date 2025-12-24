@@ -4,12 +4,14 @@ namespace eVybir.Repos
 {
     public static class PermissionsDb
     {
+        const string Table = "Permissions";
+
         public static int? GetRoleById(int id)
         {
             using var conn = DbCore.OpenConnection();
             using var cmd = conn.CreateCommand();
             var pId = cmd.Parameters.AddWithValue("id", id);
-            cmd.CommandText = $"select AccessLevel from Permissions where Active = 1 and UserId = @{pId}";
+            cmd.CommandText = $"select AccessLevel from {Table} where Active = 1 and UserId = @{pId}";
             var result = (int?)cmd.ExecuteScalar();
             return result;
         }
@@ -18,7 +20,7 @@ namespace eVybir.Repos
         {
             using var conn = DbCore.OpenConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = $"select Id, UserId, AccessLevel, Active from Permissions";
+            cmd.CommandText = $"select Id, UserId, AccessLevel, Active from {Table}";
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
@@ -32,7 +34,7 @@ namespace eVybir.Repos
             using var cmd = conn.CreateCommand();
             var pId = cmd.Parameters.AddWithValue("id", id);
             var pActive = cmd.Parameters.AddWithValue("active", active);
-            cmd.CommandText = $"update Permissions set Active = @{pActive} where UserId = @{pId}";
+            cmd.CommandText = $"update {Table} set Active = @{pActive} where UserId = @{pId}";
             cmd.ExecuteNonQuery();
         }
 
@@ -43,9 +45,8 @@ namespace eVybir.Repos
             var pId = cmd.Parameters.AddWithValue("id", userId);
             var pAccess = cmd.Parameters.AddWithValue("access", accessLevel);
             var pActive = cmd.Parameters.AddWithValue("active", true);
-            cmd.CommandText = $"insert into Permissions (UserId, AccessLevel, Active) values (@{pId}, @{pAccess}, @{pActive})";
+            cmd.CommandText = $"insert into {Table} (UserId, AccessLevel, Active) values (@{pId}, @{pAccess}, @{pActive})";
             cmd.ExecuteNonQuery();
         }
-
     }
 }

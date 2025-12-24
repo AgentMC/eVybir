@@ -23,3 +23,40 @@ function switchCampaign() {
         location.href = selectedCampaignId;
     }
 }
+function filterCandidates() {
+    var filter = $('input[type=radio]:checked').attr('data-filter');
+    $('#leftSelect option').each((_, o) => {
+        o = $(o);
+        if (filter.includes(o.attr('data-kind'))) {
+            o.show();
+        } else {
+            o.hide();
+        }
+    });
+}
+
+function updateButtonStates() {
+    if ($('#leftSelect').prop('selectedIndex') > -1) {
+        $('#btnAddParent').removeAttr('disabled');
+    } else {
+        $('#btnAddParent').attr('disabled',true);
+    }
+}
+
+function addAsParent() {
+    var leftSelect = $('#leftSelect')[0];
+    var rightSelect = $('#rightSelect')[0];
+    var hidden = $('#inclusionModel')[0]
+    var model = JSON.parse(hidden.value);
+    var nodeCount = leftSelect.selectedOptions.length;
+    for (var i = 0; i < nodeCount; i++) {
+        var option = leftSelect.selectedOptions[0];
+        rightSelect.appendChild(option);
+        model.push({
+            "CandidateId": Number.parseInt(option.value),
+            "DisplayOrder": model.length,
+            "Children": []
+        });
+    }
+    hidden.value = JSON.stringify(model);
+}

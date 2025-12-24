@@ -2,6 +2,7 @@ using eVybir.Infra;
 using eVybir.Pages.Shared;
 using eVybir.Repos;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace eVybir.Pages
 {
@@ -14,28 +15,62 @@ namespace eVybir.Pages
 
         public override string Title => "Призначити кандидатів";
 
+        public IEnumerable<DbWrapped<int, Campaign>> Campaigns { get; init; }
+
+
         public bool ShowOnlyList { get; private set; } = true;
 
-        public int? CurrentCampaignId { get; private set; }
+        public int CurrentCampaignId { get; private set; }
 
-        public Campaign? CurrentCampaign { get; private set; }
+        public List<DbWrapped<int, Candidate>> Candidates { get; set; } 
 
-        public IEnumerable<DbWrapped<int, Campaign>> Campaigns { get; init; }
+        public List<Participant> ParticipantsRoot { get; set; } 
+
+        public int[] IncludedCandidateIds { get; set; }
+
 
         public IActionResult OnGet(int? id)
         {
             if (id.HasValue)
             {
                 CurrentCampaignId = id.Value;
-                CurrentCampaign = Campaigns.FirstOrDefault(c => c.Key == CurrentCampaignId)?.Entity;
-                if (CurrentCampaign == null) // wrong, race condition etc.
+                if (!Campaigns.Any(c => c.Key == CurrentCampaignId)) // wrong, race condition etc.
                 {
                     return RedirectToPage(Location<Pages_ManageCampaign>());
                 }
+
                 ShowOnlyList = false;
-                //TBD load page details for the campaigns
+                Candidates = CandidatesDb.GetCandidates().ToList();
+                ParticipantsRoot = CampaignCandidatesDb.GetParticipantsByCampaignFlat(CurrentCampaignId).OrderBy(p => p.DisplayOrder).ToList();
+                IncludedCandidateIds = ParticipantsRoot.Select(p => p.CandidateId).ToArray();
+                for (int i = ParticipantsRoot.Count - 1; i >= 0; i--)
+                {
+                    var participant = ParticipantsRoot[i];
+                    if (participant.GroupId.HasValue)
+                    {
+                        ParticipantsRoot.RemoveAt(i);
+                        ParticipantsRoot.First(p => p.CandidateId == participant.GroupId.Value).Children.Insert(0, participant);
+                    }
+                }
             }
             return Page();
+        }
+
+        public IActionResult OnPost(int? id, string inclusionModel)
+        {
+            if (!id.HasValue) return NotFound();
+            var updateModel = JsonSerializer.Deserialize<List<Participant>>(inclusionModel)!;
+            for (int i = updateModel.Count-1; i >= 0 ; i--)
+            {
+                var chCol = updateModel[i].Children;
+                for (int j = chCol.Count -1; j >= 0; j--)
+                {
+                    updateModel.Add(chCol[j]);
+                    chCol.RemoveAt(j);
+                }
+            }
+            CampaignCandidatesDb.UpdateCampaignData(id.Value, updateModel);
+            return RedirectToPage(Location<Pages_ManageCampaign>(), new { id = (int?)null });
         }
     }
 }

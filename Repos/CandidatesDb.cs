@@ -4,11 +4,13 @@ namespace eVybir.Repos
 {
     public static class CandidatesDb
     {
+        const string Table = "Candidates";
+
         public static IEnumerable<DbWrapped<int, Candidate>> GetCandidates()
         {
             using var conn = DbCore.OpenConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = $"select Id, Name, Date, Description, EntryType from Candidates";
+            cmd.CommandText = $"select Id, Name, Date, Description, EntryType from {Table}";
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
@@ -24,7 +26,7 @@ namespace eVybir.Repos
             var pDate = cmd.AddParameterNullable("date", date);
             var pDescr = cmd.AddParameterNullable("descr", description);
             var pKind = cmd.AddParameter("kind", entryKind);
-            cmd.CommandText = $"insert into Candidates (Name, Date, Description, EntryType) values (@{pName}, @{pDate}, @{pDescr}, @{pKind})";
+            cmd.CommandText = $"insert into {Table} (Name, Date, Description, EntryType) values (@{pName}, @{pDate}, @{pDescr}, @{pKind})";
             cmd.ExecuteNonQuery();
         }
 
@@ -37,7 +39,7 @@ namespace eVybir.Repos
             var pDate = cmd.AddParameterNullable("date", date);
             var pDescr = cmd.AddParameterNullable("descr", description);
             var pKind = cmd.AddParameter("kind", entryKind);
-            cmd.CommandText = $"update Candidates set Name=@{pName}, Date=@{pDate}, Description=@{pDescr}, EntryType=@{pKind} where id=@{pId}";
+            cmd.CommandText = $"update {Table} set Name=@{pName}, Date=@{pDate}, Description=@{pDescr}, EntryType=@{pKind} where id=@{pId}";
             cmd.ExecuteNonQuery();
         }
 
@@ -46,7 +48,7 @@ namespace eVybir.Repos
             using var conn = DbCore.OpenConnection();
             using var cmd = conn.CreateCommand();
             var pId = cmd.AddParameter("id", id);
-            cmd.CommandText = $"delete from Candidates where id=@{pId}";
+            cmd.CommandText = $"delete from {Table} where id=@{pId}";
             cmd.ExecuteNonQuery();
         }
     }

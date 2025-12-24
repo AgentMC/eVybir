@@ -5,11 +5,13 @@ namespace eVybir.Repos
 {
     public static class CampaignsDb
     {
+        const string Table = "Campaigns";
+
         public static DbCampaigns GetCampaigns(string filter = "")
         {
             using var conn = DbCore.OpenConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = $"select Id, Name, StartTime, EndTime from Campaigns {filter}";
+            cmd.CommandText = $"select Id, Name, StartTime, EndTime from {Table} {filter}";
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
@@ -28,7 +30,7 @@ namespace eVybir.Repos
             var pName = cmd.AddParameter("name", name);
             var pDateStart = cmd.AddParameter("start", start);
             var pDateEnd = cmd.AddParameter("end", end);
-            cmd.CommandText = $"insert into Campaigns (Name, StartTime, EndTime) values (@{pName}, @{pDateStart}, @{pDateEnd})";
+            cmd.CommandText = $"insert into {Table} (Name, StartTime, EndTime) values (@{pName}, @{pDateStart}, @{pDateEnd})";
             cmd.ExecuteNonQuery();
         }
 
@@ -40,7 +42,7 @@ namespace eVybir.Repos
             var pName = cmd.AddParameter("name", name);
             var pDateStart = cmd.AddParameter("start", start);
             var pDateEnd = cmd.AddParameter("end", end);
-            cmd.CommandText = $"update Campaigns set Name=@{pName}, StartTime=@{pDateStart}, EndTime=@{pDateEnd} where id=@{pId}";
+            cmd.CommandText = $"update {Table} set Name=@{pName}, StartTime=@{pDateStart}, EndTime=@{pDateEnd} where id=@{pId}";
             cmd.ExecuteNonQuery();
         }
 
@@ -49,7 +51,7 @@ namespace eVybir.Repos
             using var conn = DbCore.OpenConnection();
             using var cmd = conn.CreateCommand();
             var pId = cmd.AddParameter("id", id);
-            cmd.CommandText = $"delete from Campaigns where id=@{pId}";
+            cmd.CommandText = $"delete from {Table} where id=@{pId}";
             cmd.ExecuteNonQuery();
         }
     }
