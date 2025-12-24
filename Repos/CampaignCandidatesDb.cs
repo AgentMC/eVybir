@@ -36,8 +36,8 @@ namespace eVybir.Repos
                     var pDisp = cmd.AddParameter("dispOrd" + i, participant.DisplayOrder);
                     command.AppendLine($"(@{pId}, @{pCandId}, @{pGrpId}, @{pDisp}),");
                 }
+                while (command[^1] != ')') command.Length--;
             }
-            while (command[^1] != ')') command.Length--;
             cmd.CommandText = command.ToString();
             cmd.ExecuteNonQuery();
         }

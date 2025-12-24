@@ -3,7 +3,17 @@
 @model eVybir.Pages.ManageCampaignModel
 @{
     Model.SetPageData(ViewData);
+
+    async Task RenderCandidate(int candId, Candidate candidate, string? addClass = null)
+    {
+        <option value="@candId" data-kind="@candidate.EntryKind" class="@($"{addClass}")">
+            @candidate.Name
+            @(candidate.Date.HasValue ? $"({candidate.Date.Value.ToShortDateString()})" : string.Empty) -
+            @(candidate.Kind)
+        </option>
+    }
 }
+
 
 <div>
     <h1 class="text-center">Учасники виборчих подій</h1>
@@ -40,46 +50,36 @@
             }
         </select>
         <button onclick="switchCampaign()">Перейти</button>
-        <hr />
         <script>document.getElementById('topCampaignSelector').value="@Model.CurrentCampaignId"</script>
+        <hr />
         <div class="campaignManagerGrid">
-            <div>
-                <input type="radio" name="filterType" onclick="filterCandidates()" id="radioAll" data-filter="@Candidate.EntryType.Spoil|@Candidate.EntryType.Person|@Candidate.EntryType.Group" checked /><label for="radioAll">Всі</label>
-                <input type="radio" name="filterType" onclick="filterCandidates()" id="radioIndividual" data-filter="@Candidate.EntryType.Spoil|@Candidate.EntryType.Person" /><label for="radioIndividual">Фізичні особи</label>
-                <input type="radio" name="filterType" onclick="filterCandidates()" id="radioGroup" data-filter="@Candidate.EntryType.Spoil|@Candidate.EntryType.Group" /><label for="radioGroup">Групи та партії</label>
+            <div class="d-flex leftColMax35vw">
+                <div><input type="radio" name="filterType" onclick="filterCandidates()" id="radioAll" data-filter="@Candidate.EntryType.Spoil|@Candidate.EntryType.Person|@Candidate.EntryType.Group" checked /><label for="radioAll">Всі</label></div>
+                <div><input type="radio" name="filterType" onclick="filterCandidates()" id="radioIndividual" data-filter="@Candidate.EntryType.Spoil|@Candidate.EntryType.Person" /><label for="radioIndividual">Фізичні особи</label></div>
+                <div><input type="radio" name="filterType" onclick="filterCandidates()" id="radioGroup" data-filter="@Candidate.EntryType.Spoil|@Candidate.EntryType.Group" /><label for="radioGroup">Групи та партії</label></div>
             </div>
             <div style="grid-column:2/4;">Кандидати в бюлетені</div>
             <div>
-                <select multiple size="20" style="overflow:auto;max-width:35vw;" id="leftSelect" onclick="updateButtonStates()">
-                    @foreach (var cand in Model.Candidates.Where(dbc => !Model.IncludedCandidateIds.Contains(dbc.Key)).OrderBy(c=>c.Entity.Name))
+                <script>
+                    document.sortedIds = @JsonSerializer.Serialize(Model.SortedCandidateIds);
+                </script>
+                <select multiple size="20" class="leftColMax35vw overflow-auto" style="min-width:16vw;" id="leftSelect" onclick="updateButtonStates()">
+                    @foreach (var cand in Model.Candidates.Where(dbc => !Model.IncludedCandidateIds.Contains(dbc.Key)))
                     {
-                        var candidate = cand.Entity;
-                        <option value="@cand.Key" data-kind="@cand.Entity.EntryKind">
-                            @candidate.Name
-                            @(candidate.Date.HasValue ? $"({candidate.Date.Value.ToShortDateString()})" : string.Empty) -
-                            @(candidate.Kind)
-                        </option>
+                        await RenderCandidate(cand.Key, cand.Entity);
                     }
                 </select>
             </div>
             <div>
-                <select size="20" style="overflow:auto;width:100%;" id="rightSelect" onclick="updateButtonStates()">
+                <select size="20" class="overflow-auto" style="width:100%;" id="rightSelect" onclick="updateButtonStates()">
                     @foreach (var participant in Model.ParticipantsRoot)
                     {
                         var candidate = Model.Candidates.Single(c => c.Key == participant.CandidateId).Entity;
-                        <option value="@participant.CandidateId" class="node-primary">
-                            @candidate.Name
-                            @(candidate.Date.HasValue ? $"({candidate.Date.Value.ToShortDateString()})" : string.Empty) -
-                            @(candidate.Kind)
-                        </option>
+                        await RenderCandidate(participant.CandidateId, candidate, "node-primary");
                         @foreach (var partL2 in participant.Children)
                         {
                             candidate = Model.Candidates.Single(c => c.Key == partL2.CandidateId).Entity;
-                            <option value="@partL2.CandidateId" class="node-secondary">
-                                @candidate.Name
-                                @(candidate.Date.HasValue ? $"({candidate.Date.Value.ToShortDateString()})" : string.Empty) -
-                                @(candidate.Kind)
-                            </option>
+                            await RenderCandidate(partL2.CandidateId, candidate, "node-secondary");
                         }
                     }
                 </select>
@@ -87,19 +87,19 @@
             <div class="d-flex flex-column gap-3 justify-content-center" >
                 <button disabled id="btnUp">Рухати вище⬆️</button>
                 <button disabled id="btnDn">Рухати нижче⬇️</button>
-                <button disabled id="btnDel">Прибрати виділене❌</button>
-                <button id="btnClr">Прибрати все❌</button>
+                <button disabled id="btnDel" onclick="removefromList()">Прибрати виділене❌</button>
+                <button          id="btnClr" onclick="removeAll()">Прибрати все❌</button>
             </div>
             <div>
                 <button disabled id="btnAddParent" onclick="addAsParent()">Додати як Кандидатів▶️</button>
-                <button disabled id="btnAddChild">Додати як членів групи⏩</button>
+                <button disabled id="btnAddChild" onclick="addAsChild()">Додати як членів групи⏩</button>
             </div>
             <div>
                 <button disabled id="btnPromote">Повисити до Кандидата⤴️</button>
                 <button disabled id="btnDemote">Понизити до члена групи↪️</button>
             </div>
             <div>
-                <form class="w-100 h-100" method="post">
+                <form class="w-100 h-100" method="post" onsubmit="setOrder()">
                     <input type="hidden" name="inclusionModel" id="inclusionModel" value="@JsonSerializer.Serialize(Model.ParticipantsRoot)" />
                     <input type="submit" class="w-100 h-100 fw-bold" value="Зберегти✅" />
                 </form>

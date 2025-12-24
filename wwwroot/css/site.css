@@ -46,8 +46,16 @@ body {
     border-radius:9px;
 }
 
+.campaignManagerGrid input[type=radio] + label {
+    margin: 0px 6px 0px 2px;
+}
+
+.leftColMax35vw {
+    max-width: 35vw;
+}
+
 .node-primary {
-    padding: 5px 0px 2px 0px;
+    padding: 5px 0px 2px 2px;
 }
 
 .node-secondary {

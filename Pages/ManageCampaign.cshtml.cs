@@ -27,6 +27,7 @@ namespace eVybir.Pages
         public List<Participant> ParticipantsRoot { get; set; } 
 
         public int[] IncludedCandidateIds { get; set; }
+        public int[] SortedCandidateIds { get; set; }
 
 
         public IActionResult OnGet(int? id)
@@ -40,9 +41,10 @@ namespace eVybir.Pages
                 }
 
                 ShowOnlyList = false;
-                Candidates = CandidatesDb.GetCandidates().ToList();
+                Candidates = CandidatesDb.GetCandidates().OrderBy(c => c.Entity.Name).ToList();
                 ParticipantsRoot = CampaignCandidatesDb.GetParticipantsByCampaignFlat(CurrentCampaignId).OrderBy(p => p.DisplayOrder).ToList();
                 IncludedCandidateIds = ParticipantsRoot.Select(p => p.CandidateId).ToArray();
+                SortedCandidateIds = Candidates.Select(c => c.Key).ToArray();
                 for (int i = ParticipantsRoot.Count - 1; i >= 0; i--)
                 {
                     var participant = ParticipantsRoot[i];
