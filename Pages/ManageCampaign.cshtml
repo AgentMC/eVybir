@@ -85,18 +85,14 @@
                 </select>
             </div>
             <div class="d-flex flex-column gap-3 justify-content-center" >
-                <button disabled id="btnUp">Рухати вище⬆️</button>
-                <button disabled id="btnDn">Рухати нижче⬇️</button>
+                <button disabled id="btnUp"  onclick="moveUp()">Рухати вище⬆️</button>
+                <button disabled id="btnDn"  onclick="moveDn()">Рухати нижче⬇️</button>
                 <button disabled id="btnDel" onclick="removeFromList()">Прибрати виділене❌</button>
                 <button          id="btnClr" onclick="removeAll()">Прибрати все❌</button>
             </div>
-            <div>
+            <div style="grid-column:1/3;">
                 <button disabled id="btnAddParent" onclick="addAsParent()">Додати як Кандидатів▶️</button>
                 <button disabled id="btnAddChild" onclick="addAsChild()">Додати як членів групи⏩</button>
-            </div>
-            <div>
-                <button disabled id="btnPromote">Повисити до Кандидата⤴️</button>
-                <button disabled id="btnDemote">Понизити до члена групи↪️</button>
             </div>
             <div>
                 <form class="w-100 h-100" method="post" onsubmit="setOrder()">

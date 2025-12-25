@@ -131,59 +131,62 @@ function _beginUxMove(o, isParent) {
     return data;
 }
 
-function updateButtonStates() {
-    var o = _beginOpCore();
+function updateButtonStates(o) {
+    o ??= _beginOpCore();
     var lsi = o.LeftSelect.selectedIndex;
     var rsi = o.RightSelect.selectedIndex;
     var rLocation = {};
     var rIsChild = false;
     var rKind = undefined;
+    kind = (option) => option.getAttribute('data-kind');
+    state = (id, enabled) => { var x = $(`#${id}`); if (enabled) { x.removeAttr('disabled'); } else { x.attr('disabled', true); } }
     if (rsi > -1) {
         rLocation = _getParticipantLocation(o.Model, o.RightSelect.value);
         rIsChild = rLocation.Child > -1;
-        rKind = o.RightSelect.selectedOptions[0].getAttribute('data-kind');
+        rKind = kind(o.RightSelect.selectedOptions[0]);
         //^--Spoil|Person|Group
     }
 
     //Add Parent
-    if (lsi > -1) {
-        $('#btnAddParent').removeAttr('disabled');
-    } else {
-        $('#btnAddParent').attr('disabled', true);
-    }
+    state('btnAddParent', lsi > -1);
 
     //Add Child
     var enableAddChild = false;
     if (lsi > -1 && rsi > -1 && (rIsChild || rKind == 'Group')) {
         enableAddChild = true;
         for (var i = 0; i < o.LeftSelect.selectedOptions.length; i++) {
-            if (o.LeftSelect.selectedOptions[i].getAttribute('data-kind') != 'Person') {
+            if (kind(o.LeftSelect.selectedOptions[i]) != 'Person') {
                 enableAddChild = false;
             }
         }
     }
-    if (enableAddChild) {
-        $('#btnAddChild').removeAttr('disabled');
-    } else {
-        $('#btnAddChild').attr('disabled', true);
-    }
+    state('btnAddChild', enableAddChild);
 
     //Remove selected
-    if (rsi > -1) {
-        $('#btnDel').removeAttr('disabled');
-    } else {
-        $('#btnDel').attr('disabled', true);
-    }
+    state('btnDel', rsi > -1);
+
+    //Move up
+    state('btnUp', (rsi > 0 && !rIsChild) || (rsi > -1 && rIsChild && rLocation.Child > 0));
+
+    //Move down
+    state('btnDn', rsi > -1 && ((!rIsChild && rLocation.Parent + 1 < o.Model.length) || (rIsChild && rLocation.Child + 1 < o.Model[rLocation.Parent].Children.length)));
 
 }
 
 function _beginOp(parseModel = true) {
     var o = _beginOpCore(parseModel);
     o.Finalize = function () {
-        this.Hidden.value = this.Model == undefined ? '[]' : JSON.stringify(this.Model);
-        updateButtonStates();
+        if (this.Model == undefined) throw "Model, when not parsed, must be provided before calling Finalize();"
+        this.Hidden.value = JSON.stringify(this.Model);
+        updateButtonStates(this);
     }
     return o;
+}
+
+function _moveModelItem(isParent, model, location, isDown) {
+    var list = isParent ? model : model[location.Parent].Children;
+    var index = isParent ? location.Parent : location.Child;
+    list.splice(index + (isDown ? 1 : -1), 0, list.splice(index, 1)[0]);
 }
 
 function addAsParent() {
@@ -244,6 +247,39 @@ function removeAll() {
         o.LeftSelect.options.add(option, _getNextSortedId(o.LeftSelect, option.value));
         $(option).removeClass('node-primary').removeClass('node-secondary');
     }
+    o.Model = [];
+    o.Finalize();
+}
+
+function moveUp() {
+    var o = _beginOp();
+    var location = _getParticipantLocation(o.Model, o.RightSelect.selectedOptions[0].value);
+    var isParent = location.Child == -1;
+    //ux
+    var idx = o.RightSelect.selectedIndex;
+    var uxSkip = 1 + (isParent ? o.Model[location.Parent - 1].Children.length : 0);
+    var optionBefore = o.RightSelect.options[idx - uxSkip];
+    for (var i = 0; i < 1 + (isParent ? o.Model[location.Parent].Children.length : 0); i++) {
+        o.RightSelect.options.add(o.RightSelect.options[idx + i], optionBefore);
+    }
+    //model
+    _moveModelItem(isParent, o.Model, location, false);
+    o.Finalize();
+}
+
+function moveDn() {
+    var o = _beginOp();
+    var location = _getParticipantLocation(o.Model, o.RightSelect.selectedOptions[0].value);
+    var isParent = location.Child == -1;
+    //ux
+    var idx = o.RightSelect.selectedIndex;
+    var uxSkip = 1 + (isParent ? o.Model[location.Parent].Children.length : 0);
+    var optionBefore = o.RightSelect.options[idx + uxSkip + (isParent ? o.Model[location.Parent + 1].Children.length : 0) + 1 /*because it's "before"*/];
+    for (var i = 0; i < uxSkip; i++) {
+        o.RightSelect.options.add(o.RightSelect.options[idx], optionBefore);
+    }
+    //model
+    _moveModelItem(isParent, o.Model, location, true);
     o.Finalize();
 }
 
