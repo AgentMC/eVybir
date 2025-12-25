@@ -75,12 +75,60 @@ function _getParticipantLocation(model, cId) {
     return undefined;
 }
 
+///Returns an object describing the location to add next item:
+///{Parent: int?, Child: int?, Option: <option>?}
+///Parent and Child are Model indices as per _getParticipantLocation()
+///Option is the DOM <option> object before which to insert - or null (append)
+///In all 3 cases, undefined means "no recommendation, append" (it works for "Select.options.add()").
+///For Ints, -1 on Child means "inapplicable as the item is Parent".
 function _getNextOption(rightSelect, isParent, model) {
-    if (rightSelect.selectedIndex == -1) return undefined;
+    //An item must be selected on the right
+    if (rightSelect.selectedIndex == -1) return { }; //all undefined, append
+
     var location = _getParticipantLocation(model, rightSelect.selectedOptions[0].value);
-    if (location.Child > -1 && !isParent) return rightSelect.selectedOptions[0];
-    var i = location.Parent + 1;
-    return i < model.length ? _getOptionByValue(rightSelect, model[i].CandidateId) : undefined;
+    
+    //Add Child when a child is selected --> insert before the one selected
+    if (location.Child > -1 && !isParent) {
+        location.Option = rightSelect.selectedOptions[0];
+        return location;
+    }
+
+    //Add Child when Parent is selected --> model: append the Children | ux: insert before next Parent or Append if last
+    //Add Parent when Parent is selected --> both: insert Parent before the next Parent or Append if last
+    //Add Parent when Child is selected --> same as above; we ignore the fact that a child is selected and just work on it's parent
+    var uxBeforeParentModelIndex = location.Parent + 1;
+    location.Option = uxBeforeParentModelIndex < model.length //is the next Parent available?
+        ? _getOptionByValue(rightSelect, model[uxBeforeParentModelIndex].CandidateId)
+        : undefined;
+    if (!isParent) { //adding child
+        location.Child = undefined; //append to Children collection
+    } else {
+        location.Parent = location.Option != undefined ? uxBeforeParentModelIndex : undefined; //if next Parent is available, insert before it else append
+    }
+    return location;
+}
+
+///See _getNextOption(...)
+///1. This one pre-processes the undefined on Ints so that the data can be passed onto splice() over model
+///2. This one adds CandidateId property which is int = value of the <option> being moved:
+///{Parent: int?, Child: int?, Option: <option>?, CandidateId: int}
+function _beginUxMove(o, isParent) {
+    //locate
+    var data = _getNextOption(o.RightSelect, isParent, o.Model);
+    //pre-process and validate data
+    if (data.Parent != undefined && data.Child == undefined) data.Child = o.Model[data.Parent].Children.length;
+    if (data.Parent == undefined && isParent) data.Parent = o.Model.length;
+    if (data.Parent == undefined && !isParent) throw "Attempting to add a Child but _getNextOption() could not resolve Parent.";
+    //ux movement, fixing the selected parent
+    var option = o.LeftSelect.selectedOptions[0];
+    var selectedRightOption = o.RightSelect.selectedOptions[0];
+    o.RightSelect.options.add(option, data.Option);
+    $(option).addClass(isParent ? 'node-primary' : 'node-secondary');
+    if (selectedRightOption != undefined) selectedRightOption.selected = true;
+    //CandidateId
+    data.CandidateId = Number.parseInt(option.value);
+    //return
+    return data;
 }
 
 function updateButtonStates() {
@@ -105,7 +153,16 @@ function updateButtonStates() {
     }
 
     //Add Child
+    var enableAddChild = false;
     if (lsi > -1 && rsi > -1 && (rIsChild || rKind == 'Group')) {
+        enableAddChild = true;
+        for (var i = 0; i < o.LeftSelect.selectedOptions.length; i++) {
+            if (o.LeftSelect.selectedOptions[i].getAttribute('data-kind') != 'Person') {
+                enableAddChild = false;
+            }
+        }
+    }
+    if (enableAddChild) {
         $('#btnAddChild').removeAttr('disabled');
     } else {
         $('#btnAddChild').attr('disabled', true);
@@ -129,48 +186,39 @@ function _beginOp(parseModel = true) {
     return o;
 }
 
-
 function addAsParent() {
     var o = _beginOp();
     var nodeCount = o.LeftSelect.selectedOptions.length;
     for (var i = 0; i < nodeCount; i++) {
-        var option = o.LeftSelect.selectedOptions[0];
-        var beforeOption = _getNextOption(o.RightSelect, true, o.Model);
-        o.RightSelect.options.add(option, beforeOption);
-        o.Model.push({
-            "CandidateId": Number.parseInt(option.value),
+        //locate and update UX
+        var insertData = _beginUxMove(o, true);
+        //model
+        o.Model.splice(insertData.Parent, 0, {
+            "CandidateId": insertData.CandidateId,
             "Children": []
         });
-        $(option).addClass('node-primary');
     }
     o.Finalize();
 }
+
 function addAsChild() {
     var o = _beginOp();
     var nodeCount = o.LeftSelect.selectedOptions.length;
     for (var i = 0; i < nodeCount; i++) {
-        var option = o.LeftSelect.selectedOptions[0];
-        var beforeOption = _getNextOption(o.RightSelect, false, o.Model);
-        var parent;
-        if (beforeOption == undefined) {
-            parent = o.Model[o.Model.length - 1];
-        } else {
-            var beforeOptionLocation = _getParticipantLocation(o.Model, beforeOption.value);
-            parent = beforeOptionLocation.Child > -1
-                ? o.Model[beforeOptionLocation.Parent]
-                : o.Model[beforeOptionLocation.Parent - 1];
-        }
-        o.RightSelect.options.add(option, beforeOption);
-        parent.Children.push({
-            "CandidateId": Number.parseInt(option.value),
+        //locate and update UX
+        var insertData = _beginUxMove(o, false);
+        //model
+        var parent = o.Model[insertData.Parent];
+        parent.Children.splice(insertData.Child, 0, {
+            "CandidateId": insertData.CandidateId,
             "GroupId": parent.CandidateId,
             "Children": []
         });
-        $(option).addClass('node-secondary');
     }
     o.Finalize();
 }
-function removefromList() {
+
+function removeFromList() {
     var o = _beginOp();
     var option = o.RightSelect.selectedOptions[0];
     var location = _getParticipantLocation(o.Model, option.value);
