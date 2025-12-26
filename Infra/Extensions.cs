@@ -25,9 +25,9 @@ namespace eVybir.Infra
                 object value = input[i];
                 if (value is DBNull)
                 {
-#pragma warning disable CS8603 // Possible null reference return.
+#pragma warning disable CS8603 // Possible null reference return is expected.
                     return default;
-#pragma warning restore CS8603 // Possible null reference return.
+#pragma warning restore CS8603
                 }
                 else
                 {

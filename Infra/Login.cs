@@ -37,17 +37,18 @@ namespace eVybir.Infra
         {
             if (int.TryParse(userId, out var loginId))
             {
-                AccessLevelCode accessLevel = (AccessLevelCode?)PermissionsDb.GetRoleById(loginId) ?? AccessLevelCode.Voter;
-                return Create(loginId, accessLevel, true);
+                return Create(loginId, (AccessLevelCode?)PermissionsDb.GetRoleById(loginId), true);
             }
             return null;
         }
 
-        public static Login Create(int id, AccessLevelCode accessLevelCode, bool enabled)
+        public static Login Create(int id, AccessLevelCode? accessLevelCode, bool enabled)
         {                
-            //the following should be coming from claims with userId
+            //the following two should be coming from claims with userId
             var userName = IdentityResolver.ResolveName(id);
-            return new(id, userName, accessLevelCode, enabled);
+            accessLevelCode ??= IdentityResolver.ResolveAge(id) > 18 ? AccessLevelCode.Voter : AccessLevelCode.None;
+
+            return new(id, userName, accessLevelCode.Value, enabled);
         }
 
         private static readonly JsonSerializerOptions options = new()

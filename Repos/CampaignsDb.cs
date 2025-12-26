@@ -11,7 +11,7 @@ namespace eVybir.Repos
         {
             using var conn = DbCore.OpenConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = $"select Id, Name, StartTime, EndTime from {Table} {filter}";
+            cmd.CommandText = $"select Id, Name, StartTime, EndTime from {Table} {filter} order by StartTime";
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {

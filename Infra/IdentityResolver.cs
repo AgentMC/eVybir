@@ -63,5 +63,7 @@
             if(datasetId < Dataset.Count) return Dataset[datasetId];
             return Dataset[Random.Shared.Next(Dataset.Count)];
         }
+
+        public static int ResolveAge(int id) => Random.Shared.Next(18, 60);
     }
 }
