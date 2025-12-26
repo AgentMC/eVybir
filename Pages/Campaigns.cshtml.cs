@@ -1,3 +1,4 @@
+using eVybir.Infra;
 using eVybir.Pages.Shared;
 using eVybir.Repos;
 using Microsoft.AspNetCore.Mvc;
@@ -10,18 +11,15 @@ namespace eVybir.Pages
 
         public override string Title => "Campaigns";
 
-        private static readonly TimeZoneInfo UkraineTimeZone = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
-        private static DateTimeOffset ToKyiv(DateTime dt) => new(dt, UkraineTimeZone.GetUtcOffset(dt));
-
         public IActionResult OnPost(int camId, string camName, DateTime startDate, DateTime endDate)
         {
             if (camId == DEFAULT_ID)
             {
-                CampaignsDb.AddCampaign(camName, ToKyiv(startDate), ToKyiv(endDate));
+                CampaignsDb.AddCampaign(camName, startDate.ToKyiv(), endDate.ToKyiv());
             }
             else
             {
-                CampaignsDb.UpdateCampaign(camId, camName, ToKyiv(startDate), ToKyiv(endDate));
+                CampaignsDb.UpdateCampaign(camId, camName, startDate.ToKyiv(), endDate.ToKyiv());
             }
             return BackToList();
         }

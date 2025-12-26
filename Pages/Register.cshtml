@@ -16,7 +16,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var ct in TicketsDb.GetUserCampaignsStatus(Model.LoginData!.Id))
+            @foreach (var ct in TicketsDb.GetUserCampaignsStatus(Model.LoginData!.Id, false))
             {
                 <tr>
                     <td>@ct.CampaignName @if(ct.IsCampaignFinished){<span class="badge bg-info text-dark">- завершено</span>}

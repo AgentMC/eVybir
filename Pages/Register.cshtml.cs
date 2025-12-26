@@ -1,6 +1,6 @@
 using eVybir.Pages.Shared;
+using eVybir.Repos;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace eVybir.Pages
 {
@@ -12,6 +12,18 @@ namespace eVybir.Pages
 
         public void OnGet()
         {
+        }
+
+        public IActionResult OnPostRegister(int campaignId) 
+        {
+            TicketsDb.Register(campaignId, LoginData!.Id, false);
+            return BackToList();
+        }
+
+        public IActionResult OnPostCancel(Guid ticketId) 
+        {
+            TicketsDb.CancelTicket(ticketId);
+            return BackToList();
         }
     }
 }

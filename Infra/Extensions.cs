@@ -41,5 +41,11 @@ namespace eVybir.Infra
             public SqlParameter AddParameter(string name, object value) => cmd.Parameters.AddWithValue(name, value);
             public SqlParameter AddParameterNullable(string name, object? value) => cmd.Parameters.AddWithValue(name, value ?? DBNull.Value);
         }
+
+        static readonly TimeZoneInfo UkraineTimeZone = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
+        extension(DateTime dt)
+        {
+            public DateTimeOffset ToKyiv() => new(dt, UkraineTimeZone.GetUtcOffset(dt));
+        }
     }
 }
