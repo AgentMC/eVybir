@@ -11,7 +11,7 @@ namespace eVybir.Repos
             using var conn = DbCore.OpenConnection();
             using var cmd = conn.CreateCommand();
             var pId = cmd.AddParameter("id", campaignId);
-            cmd.CommandText = $"select Id, CandidateId, GroupId, DisplayOrder from {Table} where CampaignId = @{pId}";
+            cmd.CommandText = $"select Id, CandidateId, GroupId, DisplayOrder from {Table} where CampaignId = @{pId} order by DisplayOrder";
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {

@@ -42,7 +42,7 @@ namespace eVybir.Pages
 
                 ShowOnlyList = false;
                 Candidates = CandidatesDb.GetCandidates().OrderBy(c => c.Entity.Name).ToList();
-                ParticipantsRoot = CampaignCandidatesDb.GetParticipantsByCampaignFlat(CurrentCampaignId).OrderBy(p => p.DisplayOrder).ToList();
+                ParticipantsRoot = CampaignCandidatesDb.GetParticipantsByCampaignFlat(CurrentCampaignId).ToList();
                 IncludedCandidateIds = ParticipantsRoot.Select(p => p.CandidateId).ToArray();
                 SortedCandidateIds = Candidates.Select(c => c.Key).ToArray();
                 for (int i = ParticipantsRoot.Count - 1; i >= 0; i--)
