@@ -39,16 +39,16 @@
                                     <ul class="dropdown-menu">
                                         <li><a class="dropdown-item text-dark" asp-page="Candidates">Кандидати</a></li>
                                         <li><a class="dropdown-item text-dark" asp-page="Campaigns">Виборчі події</a></li>
-                                        <li><a class="dropdown-item text-dark" asp-page="ManageCampaign">Учасники виборів</a></li>
+                                        <li><a class="dropdown-item text-dark" asp-page="ManageCampaign" asp-route-id="@null">Учасники виборів</a></li>
                                     </ul>
                                 </li>
                             }
                             if (al == Login.AccessLevelCode.Admin || al == Login.AccessLevelCode.LEC)
                             {
                                  <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle text-dark" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Місцева виборча комісія</a>
+                                    <a class="nav-link dropdown-toggle text-dark" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Територіальна виборча комісія</a>
                                     <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item text-dark" asp-page="CheckVoter">Видача бюлетеня</a></li>
+                                        <li><a class="dropdown-item text-dark" asp-page="CheckVoter" asp-route-id="@null">Видача бюлетеня</a></li>
                                     </ul>
                                 </li>
                             }
@@ -58,13 +58,12 @@
                                     <a class="nav-link dropdown-toggle text-dark" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Виборець</a>
                                     <ul class="dropdown-menu">
                                         <li><a class="dropdown-item text-dark" asp-page="Register">Реєстрація</a></li>
-                                        <li><a class="dropdown-item text-dark" asp-page="CastVote">Волевиявлення</a></li>
                                     </ul>
                                 </li>
                             }
                         }
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Приватність</a>
                         </li>
                     </ul>
                 </div>
@@ -79,7 +78,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2025 - eVybir - <a asp-area="" asp-page="/Privacy">Privacy</a>
+            &copy; 2025 - eVybir - <a asp-area="" asp-page="/Privacy">Приватність</a>
         </div>
     </footer>
 

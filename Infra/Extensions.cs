@@ -42,10 +42,21 @@ namespace eVybir.Infra
             public SqlParameter AddParameterNullable(string name, object? value) => cmd.Parameters.AddWithValue(name, value ?? DBNull.Value);
         }
 
-        static readonly TimeZoneInfo UkraineTimeZone = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
+        static readonly TimeZoneInfo UkraineTimeZone = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time"); 
         extension(DateTime dt)
         {
-            public DateTimeOffset ToKyiv() => new(dt, UkraineTimeZone.GetUtcOffset(dt));
+            public DateTimeOffset AsKyivTimeZone()
+            {
+                switch (dt.Kind)
+                {
+                    case DateTimeKind.Unspecified:
+                        return new(dt, UkraineTimeZone.GetUtcOffset(dt));
+                    case DateTimeKind.Utc:
+                        return TimeZoneInfo.ConvertTimeFromUtc(dt, UkraineTimeZone).AsKyivTimeZone();
+                    default:
+                        throw new ArgumentException("Use UTC with timezone or Unspecified without TZ - not Local!");
+                }
+            }
         }
     }
 }

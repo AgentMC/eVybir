@@ -6,21 +6,21 @@
 
 <div class="text-center">
     <h1 class="display-4">
-        Welcom&#101;@if(Model.IsLoggedIn){<span>, @Model.LoginData?.Name!</span>}
+        Вітаємо</>@if(Model.IsLoggedIn){<span>, @Model.LoginData?.Name!</span>}
     </h1>
 </div>
 <div class="d-flex justify-content-end">
     <form asp-page-handler="login">
         @if (Model.IsLoggedIn)
         {
-            <label for="btnLogout">Your role: @Model.LoginData?.Role</label>
-            <input type="submit" value="Logout" id="btnLogout" />
+            <label for="btnLogout">Ваша роль: @Model.LoginData?.Role</label>
+            <input type="submit" value="Вийти" id="btnLogout" />
         }
         else
         {
-            <label for="userId">User Id</label>
+            <label for="userId">Id користувача</label>
             <input type="text" name="userId" id="userId" />
-            <input type="submit" value="Login" />
+            <input type="submit" value="Увійти" />
         }
     </form>
 </div>

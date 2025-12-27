@@ -1,0 +1,74 @@
+﻿@page "{id:int?}"
+@model eVybir.Pages.CheckVoterModel
+@{
+    Model.SetPageData(ViewData);
+}
+<div>
+    <h1 class="text-center">Виборчі бюлетені громадянина(ки)</h1>
+    <script>
+        function getHref(inp) {
+            return '@(LoginAwarePageBase.Location<Pages_CheckVoter>())' + (inp.value != '' ? '/' + inp.value : '');
+        }
+    </script>
+    <label for="voterUserId">Введіть ID громадянина(ки):</label>
+    <input type="number" name="voterUserId" id="voterUserId" tabindex="1"
+           onchange="document.getElementById('switchUser').href=getHref(this);" 
+           onkeypress="if(event.key=='Enter') location.href=getHref(this);"/>
+    <a href="#" tabindex="2" id="switchUser">Перейти</a>
+    @if (Model.VoterId.HasValue)
+    {
+        <span>|</span> <a tabindex="3" href="@(LoginAwarePageBase.Location<Pages_CheckVoter>())">Скинути</a>
+    }
+    <hr />
+
+    @if (Model.VoterId.HasValue)
+    {
+        <p class="bg-warning text-dark text-center">Увага! Перелік наведено для громадянина(ки) ID @Model.VoterId.Value!</p>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Вибори <span class="badge bg-info text-dark">активні</span></th>
+                    <th>Бюлетень отримано</th>
+                    <th>Тип голосування</th>
+                    <th>Голос віддано</th>
+                    <th>Дії</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ct in TicketsDb.GetUserCampaignsStatus(Model.VoterId.Value, true))
+                {
+                    <tr>
+                        <td>@ct.CampaignName</td>
+                        <td>@ct.UfTicketReceived</td>
+                        <td>@ct.UfTicketSource</td>
+                        <td>@ct.UfTicketCommitted</td>
+                        <td>
+                            @if (ct.Ticket == null)
+                            {
+                                <form method="post" asp-page-handler="register">
+                                    <input type="hidden" name="campaignId" value="@ct.CampaignId" />
+                                    <input type="submit" value="Видати бюлетень" class="btn-primary" />
+                                </form>
+                            }
+                            else if (ct.Ticket.TicketCommittedDate.HasValue)
+                            {
+                                <span class="text-success">Голос вже віддано!</span>
+                            }
+                            else if (!ct.Ticket.IsTicketOffline)
+                            {
+                                <span>(Недоступно - скасувати бюлетень виданий онлайн може лише сам громадянин)</span>
+                            }
+                            else
+                            {
+                                <form method="post" asp-page-handler="cancel">
+                                    <input type="hidden" name="ticketId" value="@ct.Ticket.TicketId" />
+                                    <input type="submit" value="Скасувати бюлетень" class="btn-secondary"/>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

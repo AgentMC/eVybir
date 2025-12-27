@@ -19,33 +19,31 @@
             @foreach (var ct in TicketsDb.GetUserCampaignsStatus(Model.LoginData!.Id, false))
             {
                 <tr>
-                    <td>@ct.CampaignName @if(ct.IsCampaignFinished){<span class="badge bg-info text-dark">- завершено</span>}
-                    </td>
+                    <td>@ct.CampaignName @if(ct.IsCampaignFinished){<span class="badge bg-info text-dark">- завершено</span>}</td>
                     <td>@ct.UfTicketReceived</td>
                     <td>@ct.UfTicketSource</td>
                     <td>@ct.UfTicketCommitted</td>
                     <td>
-                        @if (!ct.IsCampaignFinished)
+                        @if (!ct.IsCampaignFinished && ct.Ticket?.TicketCommittedDate == null)
                         {
-                            @if(ct.Ticket == null || (!ct.Ticket.IsTicketOffline && !ct.Ticket.TicketCommittedDate.HasValue))
+                            @if(ct.Ticket == null)
                             {
-                                <form method="post">
-                                <input type="hidden" name="campaignId" value="@ct.CampaignId" />
-                                <input type="hidden" name="ticketId" value="@ct.Ticket?.TicketId" />
-                                @if (ct.Ticket == null)
-                                {
-                                    <input type="submit" value="Отримати бюлетень" class="btn-primary" asp-page-handler="register" />
-                                }
-                                else
-                                {
-                                    <a class="btn-primary" href="/Vote/@ct.Ticket.TicketId" >Голосувати</a>
-                                    <input type="submit" value="Скасувати бюлетень" class="btn-secondary" asp-page-handler="cancel" />
-                                }
+                                <form method="post" asp-page-handler="register">
+                                    <input type="hidden" name="campaignId" value="@ct.CampaignId" />
+                                    <input type="submit" value="Отримати бюлетень" class="btn btn-primary" />
                                 </form>
                             }
-                            else if(ct.Ticket?.IsTicketOffline == true)
+                            else if(ct.Ticket.IsTicketOffline)
                             {
-                                <span>(Недоступно - скасувати бюлетень виданий оффлайн може лише член ТВК)</span>
+                                <span>(Недоступно: голосуйте офлайн; для голосування онлайн, скасуйте бюлетень виданий оффлайн, звернувшись до членів ТВК)</span>
+                            }
+                            else
+                            {
+                                <form method="post" asp-page-handler="cancel">
+                                    <input type="hidden" name="ticketId" value="@ct.Ticket.TicketId" />
+                                    <a class="btn btn-primary" href="/Vote/@ct.Ticket.TicketId">Голосувати</a>
+                                    <input type="submit" value="Скасувати бюлетень" class="btn btn-secondary"/>
+                                </form>
                             }
                         }
                         else if(ct.Ticket?.TicketCommittedDate !=  null || (ct.Ticket?.IsTicketOffline == true && ct.IsCampaignFinished))
@@ -54,11 +52,11 @@
                         }
                         else if(ct.Ticket == null)
                         {
-                            <span class="text-muted">Нажаль,ви не прийняли участь в голосуванні.</span>
+                            <span class="text-muted">Ви не приймали участь в голосуванні.</span>
                         }
                         else if(ct.Ticket.TicketCommittedDate == null)
                         {
-                            <span class="text-muted">Нажаль,ви не скористалися виданим бюлетенем.</span>
+                            <span class="text-muted">Нажаль, ви не скористалися виданим бюлетенем.</span>
                         }
                     </td>
                 </tr>

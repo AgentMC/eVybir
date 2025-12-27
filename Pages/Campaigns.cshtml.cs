@@ -15,11 +15,11 @@ namespace eVybir.Pages
         {
             if (camId == DEFAULT_ID)
             {
-                CampaignsDb.AddCampaign(camName, startDate.ToKyiv(), endDate.ToKyiv());
+                CampaignsDb.AddCampaign(camName, startDate.AsKyivTimeZone(), endDate.AsKyivTimeZone());
             }
             else
             {
-                CampaignsDb.UpdateCampaign(camId, camName, startDate.ToKyiv(), endDate.ToKyiv());
+                CampaignsDb.UpdateCampaign(camId, camName, startDate.AsKyivTimeZone(), endDate.AsKyivTimeZone());
             }
             return BackToList();
         }

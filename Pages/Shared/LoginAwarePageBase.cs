@@ -41,6 +41,6 @@ namespace eVybir.Pages.Shared
                          .Split("#")[0];
         }
 
-        protected string Location<T>() where T : Page => Location(typeof(T));
+        public static string Location<T>(object? id = null) where T : Page => $"{Location(typeof(T))}{(id != null ? $"/{id}" : string.Empty)}";
     }
 }

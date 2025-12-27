@@ -20,10 +20,10 @@ namespace eVybir.Infra
         {
             return code switch
             {
-                AccessLevelCode.Admin => "Admin",
-                AccessLevelCode.CEC => "Central Electoral Commission",
-                AccessLevelCode.LEC => "Local Electoral Commission",
-                AccessLevelCode.Voter => "Voter",
+                AccessLevelCode.Admin => "Адмін",
+                AccessLevelCode.CEC => "Центральна виборча комісія",
+                AccessLevelCode.LEC => "Територіальна виборча комісія",
+                AccessLevelCode.Voter => "Виборець",
                 _ => "Undefined",
             };
         }

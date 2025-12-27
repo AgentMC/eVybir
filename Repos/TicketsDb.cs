@@ -11,13 +11,16 @@ namespace eVybir.Repos
             using var conn = DbCore.OpenConnection();
             using var cmd = conn.CreateCommand();
             var pUserId = cmd.AddParameter("userId", userId);
+            var pNow = cmd.AddParameter("dtNow", DateTime.Now);
             cmd.CommandText = $@"
 --     0     1     2       3          4              5                6
 select t.Id, c.Id, c.Name, c.EndTime, t.CreatedDate, t.CommittedDate, t.IsOffline
 from {TCampaigns} c
     left join {TTickets} t
         on c.Id = t.CampaignId
-where c.{(onlyActive? "EndTime" : "StartTime")} <= '{DateTime.Now:O}'
+        and t.UserId = @{pUserId}
+where c.StartTime <= @{pNow} 
+    {(onlyActive? $"and c.EndTime > @{pNow}" : "")}
     and (t.UserId = @{pUserId} or t.UserId is null)
 order by c.StartTime";
             using var reader = cmd.ExecuteReader();
@@ -42,9 +45,10 @@ order by c.StartTime";
             var pUserId = cmd.AddParameter("userId", userId);
             var pCampaignId = cmd.AddParameter("campaignId", campaignId);
             var pOffline = cmd.AddParameter("isOffline", isOffline);
+            var pNow = cmd.AddParameter("dtNow", DateTime.UtcNow.AsKyivTimeZone());
             cmd.CommandText = $@"
-insert into {TTickets} (Id,                        UserId,     CampaignId,     CreatedDate,               IsOffline) 
-                values ('{Guid.CreateVersion7()}', @{pUserId}, @{pCampaignId}, '{DateTime.Now.ToKyiv()}', @{pOffline})";
+insert into {TTickets} (Id,                        UserId,     CampaignId,     CreatedDate, IsOffline) 
+                values ('{Guid.CreateVersion7()}', @{pUserId}, @{pCampaignId}, @{pNow},     @{pOffline})";
             cmd.ExecuteNonQuery();
         }
 
@@ -53,7 +57,7 @@ insert into {TTickets} (Id,                        UserId,     CampaignId,     C
             using var conn = DbCore.OpenConnection();
             using var cmd = conn.CreateCommand();
             var pTicketId = cmd.AddParameter("tId", ticketId);
-            cmd.CommandText = $"delete from {TTickets} where and Id = @{pTicketId}";
+            cmd.CommandText = $"delete from {TTickets} where Id=@{pTicketId}";
             cmd.ExecuteNonQuery();
         }
 
@@ -62,7 +66,8 @@ insert into {TTickets} (Id,                        UserId,     CampaignId,     C
             using var conn = DbCore.OpenConnection();
             using var cmd = conn.CreateCommand();
             var pTicketId = cmd.AddParameter("ticketId", ticketId);
-            cmd.CommandText = $"update {TTickets} set CommittedDate='{DateTime.Now.ToKyiv()}' where Id=@{pTicketId}";
+            var pNow = cmd.AddParameter("dtNow", DateTime.UtcNow.AsKyivTimeZone());
+            cmd.CommandText = $"update {TTickets} set CommittedDate=@{pNow} where Id=@{pTicketId}";
             cmd.ExecuteNonQuery();
         }
     }

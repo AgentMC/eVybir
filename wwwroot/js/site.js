@@ -8,18 +8,21 @@ function editCandidate(key, name, date, description, kind) {
     document.getElementById('candDesc').value = description;
     document.getElementById('candKind').value = kind;
 }
+
 function editCampaign(key, name, dateStart, dateEnd) {
     document.getElementById('camId').value = key;
     document.getElementById('camName').value = name;
     document.getElementById('startDate').value = dateStart;
     document.getElementById('endDate').value = dateEnd;
 }
+
 function switchCampaign() {
-    if (confirm("Зміни на цій сторінці не були збережені!\r\nПерейти на іншу виборчу подію?")) {
+    if (!document.dirty || confirm("Зміни на цій сторінці не були збережені!\r\nПерейти на іншу виборчу подію?")) {
         var selectedCampaignId = document.getElementById('topCampaignSelector').value;
         location.href = selectedCampaignId;
     }
 }
+
 function filterCandidates() {
     var filter = $('input[type=radio]:checked').attr('data-filter');
     $('#leftSelect option').each((_, o) => {
@@ -176,7 +179,8 @@ function updateButtonStates(o) {
 function _beginOp(parseModel = true) {
     var o = _beginOpCore(parseModel);
     o.Finalize = function () {
-        if (this.Model == undefined) throw "Model, when not parsed, must be provided before calling Finalize();"
+        if (this.Model == undefined) throw "Model, when not parsed, must be provided before calling Finalize()";
+        document.dirty = true;
         this.Hidden.value = JSON.stringify(this.Model);
         updateButtonStates(this);
     }

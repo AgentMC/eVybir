@@ -34,7 +34,7 @@
                         <td>@camp.Entity.Name</td>
                         <td>@camp.Entity.Start</td>
                         <td>@camp.Entity.End</td>
-                        <td><a href="@("ManageCampaign/" + camp.Key)">Управляти</a></td>
+                        <td><a href="@(LoginAwarePageBase.Location<Pages_ManageCampaign>(camp.Key))">Управляти</a></td>
                     </tr>
                 }
             </tbody>
