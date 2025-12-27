@@ -2,25 +2,23 @@
 
 namespace eVybir.Repos
 {
-    public static class PermissionsDb
+    public class PermissionsDb : DbCore
     {
-        const string Table = "Permissions";
-
         public static int? GetRoleById(int id)
         {
-            using var conn = DbCore.OpenConnection();
+            using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
             var pId = cmd.Parameters.AddWithValue("id", id);
-            cmd.CommandText = $"select AccessLevel from {Table} where Active = 1 and UserId = @{pId}";
+            cmd.CommandText = $"select AccessLevel from {TPermissions} where Active = 1 and UserId = @{pId}";
             var result = (int?)cmd.ExecuteScalar();
             return result;
         }
 
         public static IEnumerable<DbWrapped<int, Login>> GetUsers()
         {
-            using var conn = DbCore.OpenConnection();
+            using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = $"select Id, UserId, AccessLevel, Active from {Table}";
+            cmd.CommandText = $"select Id, UserId, AccessLevel, Active from {TPermissions}";
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
@@ -30,22 +28,22 @@ namespace eVybir.Repos
 
         public static void SetActive(int id, bool active)
         {
-            using var conn = DbCore.OpenConnection();
+            using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
             var pId = cmd.Parameters.AddWithValue("id", id);
             var pActive = cmd.Parameters.AddWithValue("active", active);
-            cmd.CommandText = $"update {Table} set Active = @{pActive} where UserId = @{pId}";
+            cmd.CommandText = $"update {TPermissions} set Active = @{pActive} where UserId = @{pId}";
             cmd.ExecuteNonQuery();
         }
 
         public static void AddUser(int userId, Login.AccessLevelCode accessLevel)
         {
-            using var conn = DbCore.OpenConnection();
+            using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
             var pId = cmd.Parameters.AddWithValue("id", userId);
             var pAccess = cmd.Parameters.AddWithValue("access", accessLevel);
             var pActive = cmd.Parameters.AddWithValue("active", true);
-            cmd.CommandText = $"insert into {Table} (UserId, AccessLevel, Active) values (@{pId}, @{pAccess}, @{pActive})";
+            cmd.CommandText = $"insert into {TPermissions} (UserId, AccessLevel, Active) values (@{pId}, @{pAccess}, @{pActive})";
             cmd.ExecuteNonQuery();
         }
     }

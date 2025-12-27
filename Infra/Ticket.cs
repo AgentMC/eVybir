@@ -35,7 +35,7 @@
                     }
                     else if (Ticket.TicketCommittedDate != null)
                     {
-                        return Ticket.TicketCommittedDate.ToString();
+                        return Ticket.TicketCommittedDate.ToString()!;
                     }
                     else if (!IsCampaignFinished)
                     {

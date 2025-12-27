@@ -4,7 +4,7 @@ namespace eVybir.Infra
 {
     public static class Extensions
     {
-        extension(string input)
+        extension(string? input)
         {
             public string JsEscape() => System.Text.Json.JsonSerializer.Serialize(input);
         }

@@ -3,15 +3,13 @@ using DbCampaigns = System.Collections.Generic.IEnumerable<eVybir.Repos.DbWrappe
 
 namespace eVybir.Repos
 {
-    public static class CampaignsDb
+    public class CampaignsDb : DbCore
     {
-        const string Table = "Campaigns";
-
         public static DbCampaigns GetCampaigns(string filter = "")
         {
-            using var conn = DbCore.OpenConnection();
+            using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = $"select Id, Name, StartTime, EndTime from {Table} {filter} order by StartTime";
+            cmd.CommandText = $"select Id, Name, StartTime, EndTime from {TCampaigns} {filter} order by StartTime";
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
@@ -19,39 +17,36 @@ namespace eVybir.Repos
             }
         }
         public static DbCampaigns GetFutureCampaigns() => GetCampaigns($"where StartTime > '{DateTime.Now.AddDays(1):O}'");
-        public static DbCampaigns GetActiveCampaigns() => GetCampaigns($"where StartTime <= '{DateTime.Now:O}' and EndTime > '{DateTime.Now:O}'");
-        public static DbCampaigns GetFinishedCampaigns() => GetCampaigns($"where EndTime <= '{DateTime.Now:O}'");
-
 
         public static void AddCampaign(string name, DateTimeOffset start, DateTimeOffset end)
         {
-            using var conn = DbCore.OpenConnection();
+            using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
             var pName = cmd.AddParameter("name", name);
             var pDateStart = cmd.AddParameter("start", start);
             var pDateEnd = cmd.AddParameter("end", end);
-            cmd.CommandText = $"insert into {Table} (Name, StartTime, EndTime) values (@{pName}, @{pDateStart}, @{pDateEnd})";
+            cmd.CommandText = $"insert into {TCampaigns} (Name, StartTime, EndTime) values (@{pName}, @{pDateStart}, @{pDateEnd})";
             cmd.ExecuteNonQuery();
         }
 
         public static void UpdateCampaign(int id, string name, DateTimeOffset start, DateTimeOffset end)
         {
-            using var conn = DbCore.OpenConnection();
+            using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
             var pId = cmd.AddParameter("id", id);
             var pName = cmd.AddParameter("name", name);
             var pDateStart = cmd.AddParameter("start", start);
             var pDateEnd = cmd.AddParameter("end", end);
-            cmd.CommandText = $"update {Table} set Name=@{pName}, StartTime=@{pDateStart}, EndTime=@{pDateEnd} where id=@{pId}";
+            cmd.CommandText = $"update {TCampaigns} set Name=@{pName}, StartTime=@{pDateStart}, EndTime=@{pDateEnd} where id=@{pId}";
             cmd.ExecuteNonQuery();
         }
 
         public static void DeleteCampaign(int id)
         {
-            using var conn = DbCore.OpenConnection();
+            using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
             var pId = cmd.AddParameter("id", id);
-            cmd.CommandText = $"delete from {Table} where id=@{pId}";
+            cmd.CommandText = $"delete from {TCampaigns} where id=@{pId}";
             cmd.ExecuteNonQuery();
         }
     }

@@ -2,8 +2,14 @@
 
 namespace eVybir.Repos
 {
-    public static class DbCore
+    public class DbCore
     {
+        public const string TTickets = "Tickets", 
+                            TCampaigns = "Campaigns", 
+                            TCCandidates = "CampaignCandidates", 
+                            TCandidates = "Candidates",
+                            TPermissions = "Permissions";
+
         public static SqlConnection OpenConnection()
         {
             var conn = new SqlConnection

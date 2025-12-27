@@ -1,5 +1,10 @@
 ﻿@page "{id:Guid}"
+@using System.Text.Json
 @model eVybir.Pages.VoteModel
 @{
     Model.SetPageData(ViewData);
 }
+
+<div>
+    @(JsonSerializer.Serialize(Model.Bulletin))
+</div>

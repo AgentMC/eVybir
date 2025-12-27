@@ -2,13 +2,11 @@
 
 namespace eVybir.Repos
 {
-    public static class TicketsDb
+    public class TicketsDb : DbCore
     {
-        const string TTickets = "Tickets", TCampaigns = "Campaigns";
-
         public static IEnumerable<CampaignState> GetUserCampaignsStatus(int userId, bool onlyActive)
         {
-            using var conn = DbCore.OpenConnection();
+            using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
             var pUserId = cmd.AddParameter("userId", userId);
             var pNow = cmd.AddParameter("dtNow", DateTime.Now);
@@ -40,7 +38,7 @@ order by c.StartTime";
 
         public static void Register(int campaignId, int userId, bool isOffline)
         {
-            using var conn = DbCore.OpenConnection();
+            using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
             var pUserId = cmd.AddParameter("userId", userId);
             var pCampaignId = cmd.AddParameter("campaignId", campaignId);
@@ -54,21 +52,40 @@ insert into {TTickets} (Id,                        UserId,     CampaignId,     C
 
         public static void CancelTicket(Guid ticketId)
         {
-            using var conn = DbCore.OpenConnection();
+            using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
             var pTicketId = cmd.AddParameter("tId", ticketId);
             cmd.CommandText = $"delete from {TTickets} where Id=@{pTicketId}";
             cmd.ExecuteNonQuery();
         }
 
-        public static void Commit(Guid ticketId)
+        public static IEnumerable<BulletinEntry> GetBulletinByTicket(Guid ticketId)
         {
-            using var conn = DbCore.OpenConnection();
+            using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
             var pTicketId = cmd.AddParameter("ticketId", ticketId);
-            var pNow = cmd.AddParameter("dtNow", DateTime.UtcNow.AsKyivTimeZone());
-            cmd.CommandText = $"update {TTickets} set CommittedDate=@{pNow} where Id=@{pTicketId}";
-            cmd.ExecuteNonQuery();
+            cmd.CommandText = $@"
+--     0      1               2?          3                4       5?      6?             7
+select cc.Id, cc.CandidateId, cc.GroupId, cc.DisplayOrder, c.Name, c.Date, c.Description, c.EntryType
+from {TCCandidates} cc
+	join {TCandidates} c
+		on cc.CandidateId = c.Id
+		and cc.CampaignId = (select CampaignId from {TTickets} where Id = @{pTicketId})
+order by DisplayOrder";
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                yield return new((int)reader[0],
+                                 new(
+                                     (int)reader[1],
+                                     reader.As<int?>(2),
+                                     (int)reader[3]),
+                                 new(
+                                     (string)reader[4],
+                                     reader.As<DateTime?>(5),
+                                     reader.As<string?>(6),
+                                     (Candidate.EntryType)reader[7]));
+            }
         }
     }
 }

@@ -2,15 +2,14 @@
 
 namespace eVybir.Repos
 {
-    public static class CandidatesDb
+    public class CandidatesDb : DbCore
     {
-        const string Table = "Candidates";
 
         public static IEnumerable<DbWrapped<int, Candidate>> GetCandidates()
         {
-            using var conn = DbCore.OpenConnection();
+            using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = $"select Id, Name, Date, Description, EntryType from {Table}";
+            cmd.CommandText = $"select Id, Name, Date, Description, EntryType from {TCandidates}";
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
@@ -20,35 +19,35 @@ namespace eVybir.Repos
 
         public static void AddCandidate(string name, DateTime? date, string? description, Candidate.EntryType entryKind)
         {
-            using var conn = DbCore.OpenConnection();
+            using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
             var pName = cmd.AddParameter("name", name);
             var pDate = cmd.AddParameterNullable("date", date);
             var pDescr = cmd.AddParameterNullable("descr", description);
             var pKind = cmd.AddParameter("kind", entryKind);
-            cmd.CommandText = $"insert into {Table} (Name, Date, Description, EntryType) values (@{pName}, @{pDate}, @{pDescr}, @{pKind})";
+            cmd.CommandText = $"insert into {TCandidates} (Name, Date, Description, EntryType) values (@{pName}, @{pDate}, @{pDescr}, @{pKind})";
             cmd.ExecuteNonQuery();
         }
 
         public static void UpdateCandidate(int id, string name, DateTime? date, string? description, Candidate.EntryType entryKind)
         {
-            using var conn = DbCore.OpenConnection();
+            using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
             var pId = cmd.AddParameter("id", id);
             var pName = cmd.AddParameter("name", name);
             var pDate = cmd.AddParameterNullable("date", date);
             var pDescr = cmd.AddParameterNullable("descr", description);
             var pKind = cmd.AddParameter("kind", entryKind);
-            cmd.CommandText = $"update {Table} set Name=@{pName}, Date=@{pDate}, Description=@{pDescr}, EntryType=@{pKind} where id=@{pId}";
+            cmd.CommandText = $"update {TCandidates} set Name=@{pName}, Date=@{pDate}, Description=@{pDescr}, EntryType=@{pKind} where id=@{pId}";
             cmd.ExecuteNonQuery();
         }
 
         public static void DeleteCandidate(int id)
         {
-            using var conn = DbCore.OpenConnection();
+            using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
             var pId = cmd.AddParameter("id", id);
-            cmd.CommandText = $"delete from {Table} where id=@{pId}";
+            cmd.CommandText = $"delete from {TCandidates} where id=@{pId}";
             cmd.ExecuteNonQuery();
         }
     }

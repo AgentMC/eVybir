@@ -3,15 +3,14 @@ using System.Text;
 
 namespace eVybir.Repos
 {
-    public static class CampaignCandidatesDb
+    public class CampaignCandidatesDb : DbCore
     {
-        const string Table = "CampaignCandidates";
         public static IEnumerable<Participant> GetParticipantsByCampaignFlat(int campaignId)
         {
-            using var conn = DbCore.OpenConnection();
+            using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
             var pId = cmd.AddParameter("id", campaignId);
-            cmd.CommandText = $"select Id, CandidateId, GroupId, DisplayOrder from {Table} where CampaignId = @{pId} order by DisplayOrder";
+            cmd.CommandText = $"select Id, CandidateId, GroupId, DisplayOrder from {TCCandidates} where CampaignId = @{pId} order by DisplayOrder";
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
@@ -21,13 +20,13 @@ namespace eVybir.Repos
 
         public static void UpdateCampaignData(int campaignId, IList<Participant> participants)
         {
-            using var conn = DbCore.OpenConnection();
+            using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
             var pId = cmd.AddParameter("id", campaignId);
-            StringBuilder command = new($"delete from {Table} where CampaignId=@{pId};\r\n");
+            StringBuilder command = new($"delete from {TCCandidates} where CampaignId=@{pId};\r\n");
             if (participants.Count > 0)
             {
-                command.AppendLine($"insert into {Table} (CampaignId, CandidateId, GroupId, DisplayOrder) values");
+                command.AppendLine($"insert into {TCCandidates} (CampaignId, CandidateId, GroupId, DisplayOrder) values");
                 for (int i = 0; i < participants.Count; i++)
                 {
                     var participant = participants[i];

@@ -127,7 +127,7 @@ function _beginUxMove(o, isParent) {
     var selectedRightOption = o.RightSelect.selectedOptions[0];
     o.RightSelect.options.add(option, data.Option);
     $(option).addClass(isParent ? 'node-primary' : 'node-secondary');
-    if (selectedRightOption != undefined) selectedRightOption.selected = true;
+    if (!isParent && selectedRightOption != undefined) selectedRightOption.selected = true;
     //CandidateId
     data.CandidateId = Number.parseInt(option.value);
     //return
