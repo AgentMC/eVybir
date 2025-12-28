@@ -46,7 +46,7 @@ namespace eVybir.Infra
         {                
             //the following two should be coming from claims with userId
             var userName = IdentityResolver.ResolveName(id);
-            accessLevelCode ??= IdentityResolver.ResolveAge(id) > 18 ? AccessLevelCode.Voter : AccessLevelCode.None;
+            accessLevelCode ??= IdentityResolver.ResolveAge(id) >= 18 ? AccessLevelCode.Voter : AccessLevelCode.None;
 
             return new(id, userName, accessLevelCode.Value, enabled);
         }

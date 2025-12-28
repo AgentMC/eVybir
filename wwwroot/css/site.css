@@ -232,3 +232,13 @@ body {
     font-weight: bold;
     font-size: larger;
 }
+
+.histogram {
+    background: linear-gradient(90deg, transparent, darkseagreen, seagreen);
+}
+
+.histoLabel {
+    margin: 0px;
+    white-space: nowrap;
+    text-shadow: 0 0 6px white;
+}

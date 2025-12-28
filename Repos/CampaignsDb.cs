@@ -19,6 +19,9 @@ namespace eVybir.Repos
         public static DbCampaigns GetAllCampaigns() => GetCampaigns();
 
         public static DbCampaigns GetFutureCampaigns() => GetCampaigns($"where StartTime > '{DateTime.Now.AddDays(1):O}'");
+
+        public static DbCampaigns GetPastOrCurrentCampaigns() => GetCampaigns($"where StartTime < '{DateTime.Now:O}'");
+
         public static Campaign GetCampaignById(int campaignId) => GetCampaigns($"where Id={campaignId}").First().Entity;
 
         public static void AddCampaign(string name, DateTimeOffset start, DateTimeOffset end)

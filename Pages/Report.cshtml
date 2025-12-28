@@ -1,0 +1,133 @@
+﻿@page "{id:int?}"
+@using System.Globalization
+@model eVybir.Pages.ReportModel
+@{
+    Model.SetPageData(ViewData);
+}
+<div>
+    <h1 class="text-center">Звіт по виборам</h1>
+    <label for="topCampaignSelector">Вибори:</label>
+    <select id="topCampaignSelector" name="topCampaignSelector">
+        @foreach (var camp in Model.Campaigns)
+        {
+            <option value="@camp.Key">@camp.Value.Start.DateTime.ToShortDateString() | @camp.Value.Name</option>
+        }
+    </select>
+    <button onclick="switchCampaign()">Перейти</button>
+    <hr />
+    @if (Model.CurrentCampaignId.HasValue)
+    {
+        <script>document.getElementById('topCampaignSelector').value="@Model.CurrentCampaignId"</script>
+        
+        @if (Model.CampaignIsActive)
+        {
+            <p class="text-bg-warning text-dark text-center fw-bold">Увага! Вибори наразі відбуваються!</p>
+        }
+        else
+        {
+            <p class="text-bg-success text-light text-center">Вибори завершено.</p>
+        }
+        <div class="d-flex flex-wrap gap-2">
+            <div class="w-100">
+                <h2>Результати виборів</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Кандидат</th>
+                            <th>Голоси</th>
+                            <th>%</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var vote in Model.VoteStats)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="histogram" style="width:@((vote.Key * 100 / Model.MaxVote).ToString("F2", CultureInfo.InvariantCulture))%;">
+                                        <p class="histoLabel">
+                                            @(vote.Entity.Name)@(vote.Entity.Date.HasValue ? $" ({vote.Entity.Date.Value.ToShortDateString()})" : string.Empty)
+                                        </p>
+                                    </div>
+                                </td>
+                                <td>@vote.Key</td>
+                                <td>@(((double)vote.Key / Model.TicketStats.OnlineUsed).ToString("P2"))</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div>
+                <h2>Бюлетені і голоси</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Показник</th>
+                            <th>Кількість</th>
+                            <th>Валідація</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Всього видано бюлетеней в єВибір</td>
+                            <td>@(Model.TicketStats.Online + Model.TicketStats.Offline)</td>
+                        </tr>
+                        <tr>
+                            <td>&ndash; з них на дільницях</td>
+                            <td>@Model.TicketStats.Offline</td>
+                        </tr>
+                        <tr>
+                            <td>&ndash; з них онлайн</td>
+                            <td>@Model.TicketStats.Online</td>
+                        </tr>
+                        <tr>
+                            <td>&ndash; &ndash; з них використано</td>
+                            <td>@Model.TicketStats.OnlineUsed</td>
+                            <td>@(Model.TicketStats.OnlineUsed <= Model.TicketStats.Online ? "✅" : "❌")</td>
+                        </tr>
+                        <tr>
+                            <td>&ndash; &ndash; &ndash; з них записано голосів</td>
+                            <td>@Model.TicketStats.VotesCast</td>
+                            <td>@(Model.TicketStats.VotesCast == Model.TicketStats.OnlineUsed ? "✅" : "❌")</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p class="small">Пояснення:
+                    <ul>
+                        <li class="small">єВибір не може відслідковувати офлайн-бюлетені, ми знаємо лише про факт видачі;</li>
+                        <li class="small">Кількість "використаних" має бути менше чи дорівнювати виданим онлайн;</li>
+                        <li class="small">Кількість "голосів" має точно дорівнювати "використаним" бюлетеням;</li>
+                    </ul>
+                </p>
+            </div>
+            @if(Model.GroupMembersStats != null)
+            {
+            <div>
+                <h2>Голоси віддані напряму за членів партій</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Кандидат</th>
+                            <th>Партія</th>
+                            <th>Голоси</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var vote in Model.GroupMembersStats)
+                        {
+                            <tr>
+                                <td>
+                                    @(vote.VotedMemberName)@(vote.VotedMemberDate.HasValue ? $" ({vote.VotedMemberDate.Value.ToShortDateString()})" : string.Empty)
+                                </td>
+                                <td>@vote.GroupName</td>
+                                <td>@vote.Count</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+                
+            }
+
+        </div>
+    }
+</div>
