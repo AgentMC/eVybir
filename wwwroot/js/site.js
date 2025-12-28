@@ -306,18 +306,39 @@ function setOrder() {
     o.Finalize();
 }
 
+function _setSingularVote(participantId) {
+    $('#castIds').val(JSON.stringify([Number.parseInt(participantId)]));
+}
+
 function selectSingle(o) {
+    //called only on manual check; no recursion
+    if (document.isPartyBasedElection) {
+        $('.numberBox p').text('##');
+        $('div.badge.c-enabled').removeClass('c-enabled').removeClass('c-selected');
+    }
     if (o.checked) {
-        document.runningUncheck = true;
         $('.checkBlock .checkBox').each((_, o2) => {
             if (o2 != o) {
                 o2.checked = false;
             }
         });
-        document.runningUncheck = false;
-        $('#castIds').val(JSON.stringify([Number.parseInt(o.name)]));
-        _setState('submitBtn', true);
-    } else if (!document.runningUncheck) {
-        _setState('submitBtn', false);
+        _setSingularVote(o.name);
+        if (document.isPartyBasedElection) {
+            $('#cl-' + o.name + ' div.badge').addClass('c-enabled');
+        }
+    }
+    _setState('submitBtn', o.checked);
+}
+
+function selectListCandidate(o) {
+    o = $(o);
+    if (o.hasClass('c-enabled')) {
+        $('div.badge.c-selected').removeClass('c-selected');
+        o.addClass('c-selected');
+        var nbId = o.attr('data-nbid');
+        var nbSeqId = o.attr('data-seq');
+        var nb = $(`#${nbId} p`);
+        nb.text(nbSeqId);
+        _setSingularVote(o.attr('id'));
     }
 }

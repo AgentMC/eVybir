@@ -14,6 +14,7 @@
         <p style="width:30%" class="fw-bold">Єдиний онлайн виборчий округ</p>
     </div>
 
+    <script>document.isPartyBasedElection=@(Model.IsPartyListBasedElection.ToString().ToLower());</script>
     <table class="warningTable" border="1">
         <tr>
             <td class="warningPrimaryBox">!</td>
@@ -42,6 +43,7 @@
         {
             var entry = Model.Bulletin.PrimaryEntries[i];
             var candidate = entry.Entry.Metadata;
+            var pId = entry.Entry.ParticipantId;
             <div class="b-row-nr">@(i+1)</div>
             <div class="b-row-div">
                 <h5 class="text-uppercase fw-bold">@candidate.Name</h5>
@@ -55,18 +57,26 @@
                 }
             </div>
             <div class="checkBlock b-row-div">
-                <input type="checkbox" name="@entry.Entry.ParticipantId" class="checkBox" onchange="selectSingle(this)" />
+                <input type="checkbox" name="@pId" class="smallBox checkBox" onchange="selectSingle(this)" />
             </div>
             @if (Model.IsPartyListBasedElection)
             {
                 <div class="checkBlock b-row-div">
-                    TBD BOX
+                    @if (candidate.EntryKind == Candidate.EntryType.Group)
+                    {
+                        <div class="smallBox numberBox" id="nb-@pId">
+                            <div class="numberBoxCleanup">
+                                <p class="numberBoxText">##</p>
+                            </div>
+                        </div>
+                    }
                 </div>
-                <div class="candidatesList b-row-div">
+                <div class="candidatesList b-row-div" id="cl-@pId">
                     @for (int j=0; j<entry.Children.Length; j++)
                     {
-                        <!--TBD onclick-->
-                        <div class="badge text-bg-light">@(j). @(entry.Children[j].Metadata.ShortName)</div>
+                        var partyCandidate = entry.Children[j];
+                        var seq = j + 1;
+                        <div class="badge text-bg-light" id="@partyCandidate.ParticipantId" onclick="selectListCandidate(this)" data-nbid="nb-@pId" data-seq="@seq.ToString("D2")">@seq. @partyCandidate.Metadata.ShortName</div>
                     }
                 </div>
             }

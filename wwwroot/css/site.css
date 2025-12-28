@@ -8,6 +8,11 @@ html {
   }
 }
 
+@font-face {
+    font-family: "Zipcode";
+    src: url("/Zipcode.ttf");
+}
+
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
@@ -61,6 +66,10 @@ body {
 .node-secondary {
     padding-left:20px;
     font-size:smaller;
+}
+
+.serif{
+    font-family:'Times New Roman', Times, serif;
 }
 
 .warningTable{
@@ -130,7 +139,7 @@ body {
     border-bottom: 1px solid black;
 }
 
-.b-row-div p {
+.b-row-div p:not(.numberBoxText) {
     margin:2px 5px;
     white-space:pre-line;
     line-height:normal;
@@ -148,12 +157,39 @@ body {
     align-items: center;
 }
 
-.checkBox {
-    border: 1px solid black;
+.smallBox{
     width: 1cm;
     height: 1cm;
-    background: white;
+}
+
+.checkBox {
+    border: 1px solid black;
     cursor: pointer;
+}
+
+.numberBox {
+    border: 1px dotted black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Zipcode;
+    overflow: hidden;
+    padding-top: 0.3em;
+    padding-left: 0.15em;
+}
+
+.numberBoxCleanup {
+    overflow: hidden;
+    margin: 0px;
+    padding: 0px;
+}
+
+.numberBoxText {
+    font-size: 0.9cm;
+    position: relative;
+    top: -0.15em;
+    line-height: 0.85em;
+    margin: 0px;
 }
 
 .checkBox:hover {
@@ -169,18 +205,30 @@ body {
 }
 
 .candidatesList div{
-    border: 1px dashed darkgrey;
-    margin:0px 1px 1px 0px;
-    cursor:pointer;
+    border: 1px dashed darkslategrey;
+    margin: 0px 1px 1px 0px;
 }
 
-.serif{
-    font-family:'Times New Roman', Times, serif;
+.candidatesList div:not(.c-enabled){
+    color: lightgray !important;
 }
 
-.specialSubmit{
-    margin-top:15px;
-    width:100%;
-    font-weight:bold;
-    font-size:larger;
+.candidatesList div.c-enabled {
+    cursor: pointer;
+    color: revert;
+}
+
+.candidatesList div.c-enabled:hover {
+    background-color:darkgray !important;
+}
+
+.candidatesList div.c-selected {
+    background-color: darkgray !important;
+}
+
+.specialSubmit {
+    margin-top: 15px;
+    width: 100%;
+    font-weight: bold;
+    font-size: larger;
 }
