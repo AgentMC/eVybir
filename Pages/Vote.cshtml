@@ -4,7 +4,77 @@
 @{
     Model.SetPageData(ViewData);
 }
-
 <div>
-    @(JsonSerializer.Serialize(Model.Bulletin))
+    <div class="serif">
+        <h3 class="text-center fw-bold">
+            <span class="text-uppercase">@Model.Bulletin.Campaign.Name</span><br />
+            @Model.Bulletin.Campaign.UfDate
+        </h3>
+        <h1 class="text-center fw-bold">ВИБОРЧИЙ БЮЛЕТЕНЬ</h1>
+        <p style="width:30%" class="fw-bold">Єдиний онлайн виборчий округ</p>
+    </div>
+
+    <table class="warningTable" border="1">
+        <tr>
+            <td class="warningPrimaryBox">!</td>
+            <td class="warningNoteBox">
+                Позначте пустий квадрат навпроти лише того кандидата або політичної партії, за кого ви голосуєте.<br/>
+                @if (Model.IsPartyListBasedElection)
+                {
+                    <span>За бажанням, додатково натисніть на обраного кандидата зі списку партії, яку ви обрали. Це може вплинути на їх місце в списку.</span><br />
+                }
+                Ви можете змінити свій вибір, допоки не натиснули "Проголосувати". <br />
+                <span class="text-uppercase">⚠️Обов'язково натисніть кнопку "Проголосувати" внизу списку!⚠️</span>
+            </td>
+        </tr>
+    </table>
+
+    <div class="d-grid @(Model.IsPartyListBasedElection ? "bulletinGridWithMembers" : "bulletinGridPrimary")">
+        <div class="b-hdr-ssmall">№ з/п</div>
+        <div class="b-hdr-small">Повне ПІБ кандидата чи назва політичної партії або місцевої організації політичної партії, опис чи додаткова інформація</div>
+        <div class="b-hdr-small"></div>
+        @if (Model.IsPartyListBasedElection)
+        {
+            <div class="b-hdr-small"></div>
+            <div class="b-hdr-small">ПІБ кандидатів та номери під якими їхх включено до територіального виборчого списку місцевої організації політичної партії</div>
+        }
+        @for (int i = 0; i < Model.Bulletin.PrimaryEntries.Length; i++)
+        {
+            var entry = Model.Bulletin.PrimaryEntries[i];
+            var candidate = entry.Entry.Metadata;
+            <div class="b-row-nr">@(i+1)</div>
+            <div class="b-row-div">
+                <h5 class="text-uppercase fw-bold">@candidate.Name</h5>
+                @if (candidate.Date.HasValue)
+                {
+                    <p class="fst-italic">Дата @(candidate.EntryKind == Candidate.EntryType.Person?"народження":"створення"): @candidate.Date.Value.ToShortDateString()</p>
+                }
+                @if (candidate.Description != null)
+                {
+                    <p>@candidate.Description</p>
+                }
+            </div>
+            <div class="checkBlock b-row-div">
+                <input type="checkbox" name="@entry.Entry.ParticipantId" class="checkBox" onchange="selectSingle(this)" />
+            </div>
+            @if (Model.IsPartyListBasedElection)
+            {
+                <div class="checkBlock b-row-div">
+                    TBD BOX
+                </div>
+                <div class="candidatesList b-row-div">
+                    @for (int j=0; j<entry.Children.Length; j++)
+                    {
+                        <!--TBD onclick-->
+                        <div class="badge text-bg-light">@(j). @(entry.Children[j].Metadata.ShortName)</div>
+                    }
+                </div>
+            }
+        }
+    </div>
+    <form method="post">
+        <input type="hidden" name="castIds" id="castIds" />
+        <input type="hidden" name="campaignId" value="@Model.CampaignId" />
+        <input type="submit" value="Проголосувати!" class="specialSubmit" id="submitBtn" disabled />
+    </form>
 </div>

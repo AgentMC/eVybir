@@ -1,9 +1,9 @@
 ﻿namespace eVybir.Infra
 {
-    public record BulletinEntry(int ParticipantId, ParticipantCore Location, Candidate Metadata);
+    public record BulletinEntry(int ParticipantId, ParticipantCore Location, Candidate Metadata, int CampaignId);
 
-    public record BulletinHierarchy(BulletinEntry Entry) 
-    {
-        public BulletinEntry[]? Children { get; set; }
-    }
+    public record BulletinHierarchy(BulletinEntry Entry, BulletinEntry[] Children);
+
+    public record Bulletin(Campaign Campaign, BulletinHierarchy[] PrimaryEntries);
+    
 }

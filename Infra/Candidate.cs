@@ -1,4 +1,6 @@
-﻿namespace eVybir.Infra
+﻿using System.Text;
+
+namespace eVybir.Infra
 {
     public record Candidate(string Name, DateTime? Date, string? Description, Candidate.EntryType EntryKind)
     {
@@ -22,6 +24,31 @@
         }
 
         public string Kind => HumanizeEntryType(EntryKind);
+
+        public string ShortName
+        {
+            get
+            {
+                if (EntryKind != EntryType.Person) return Name;
+                var namings = Name.Split(" ");
+                var builder = new StringBuilder(namings[0]);
+                builder.Append(' ');
+                for (int i = 1; i < namings.Length; i++)
+                {
+                    builder.Append(namings[i][0]).Append('.');
+                    var dash = namings[i].IndexOf('-');
+                    if (dash != -1 && dash+1 < namings[i].Length)
+                    {
+                        builder.Append('-').Append(char.ToUpper(namings[i][dash+1])).Append('.');
+                    }
+                    if (i < namings.Length - 1)
+                    {
+                        builder.Append(' ');
+                    }
+                }
+                return builder.ToString();
+            }
+        }
 
     }
 }

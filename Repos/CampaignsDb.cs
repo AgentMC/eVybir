@@ -5,7 +5,7 @@ namespace eVybir.Repos
 {
     public class CampaignsDb : DbCore
     {
-        public static DbCampaigns GetCampaigns(string filter = "")
+        private static DbCampaigns GetCampaigns(string filter = "")
         {
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
@@ -16,7 +16,10 @@ namespace eVybir.Repos
                 yield return new((int)reader[0], new((string)reader[1], (DateTimeOffset)reader[2], (DateTimeOffset)reader[3]));
             }
         }
+        public static DbCampaigns GetAllCampaigns() => GetCampaigns();
+
         public static DbCampaigns GetFutureCampaigns() => GetCampaigns($"where StartTime > '{DateTime.Now.AddDays(1):O}'");
+        public static Campaign GetCampaignById(int campaignId) => GetCampaigns($"where Id={campaignId}").First().Entity;
 
         public static void AddCampaign(string name, DateTimeOffset start, DateTimeOffset end)
         {

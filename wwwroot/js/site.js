@@ -134,6 +134,15 @@ function _beginUxMove(o, isParent) {
     return data;
 }
 
+function _setState(id, enabled) {
+    var x = $(`#${id}`);
+    if (enabled) {
+        x.removeAttr('disabled');
+    } else {
+        x.attr('disabled', true);
+    }
+}
+
 function updateButtonStates(o) {
     o ??= _beginOpCore();
     var lsi = o.LeftSelect.selectedIndex;
@@ -142,7 +151,6 @@ function updateButtonStates(o) {
     var rIsChild = false;
     var rKind = undefined;
     kind = (option) => option.getAttribute('data-kind');
-    state = (id, enabled) => { var x = $(`#${id}`); if (enabled) { x.removeAttr('disabled'); } else { x.attr('disabled', true); } }
     if (rsi > -1) {
         rLocation = _getParticipantLocation(o.Model, o.RightSelect.value);
         rIsChild = rLocation.Child > -1;
@@ -151,7 +159,7 @@ function updateButtonStates(o) {
     }
 
     //Add Parent
-    state('btnAddParent', lsi > -1);
+    _setState('btnAddParent', lsi > -1);
 
     //Add Child
     var enableAddChild = false;
@@ -163,17 +171,16 @@ function updateButtonStates(o) {
             }
         }
     }
-    state('btnAddChild', enableAddChild);
+    _setState('btnAddChild', enableAddChild);
 
     //Remove selected
-    state('btnDel', rsi > -1);
+    _setState('btnDel', rsi > -1);
 
     //Move up
-    state('btnUp', (rsi > 0 && !rIsChild) || (rsi > -1 && rIsChild && rLocation.Child > 0));
+    _setState('btnUp', (rsi > 0 && !rIsChild) || (rsi > -1 && rIsChild && rLocation.Child > 0));
 
     //Move down
-    state('btnDn', rsi > -1 && ((!rIsChild && rLocation.Parent + 1 < o.Model.length) || (rIsChild && rLocation.Child + 1 < o.Model[rLocation.Parent].Children.length)));
-
+    _setState('btnDn', rsi > -1 && ((!rIsChild && rLocation.Parent + 1 < o.Model.length) || (rIsChild && rLocation.Child + 1 < o.Model[rLocation.Parent].Children.length)));
 }
 
 function _beginOp(parseModel = true) {
@@ -297,4 +304,20 @@ function setOrder() {
     var o = _beginOp();
     setOrderInternal(o.Model);
     o.Finalize();
+}
+
+function selectSingle(o) {
+    if (o.checked) {
+        document.runningUncheck = true;
+        $('.checkBlock .checkBox').each((_, o2) => {
+            if (o2 != o) {
+                o2.checked = false;
+            }
+        });
+        document.runningUncheck = false;
+        $('#castIds').val(JSON.stringify([Number.parseInt(o.name)]));
+        _setState('submitBtn', true);
+    } else if (!document.runningUncheck) {
+        _setState('submitBtn', false);
+    }
 }

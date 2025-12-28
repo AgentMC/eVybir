@@ -62,3 +62,125 @@ body {
     padding-left:20px;
     font-size:smaller;
 }
+
+.warningTable{
+    border-collapse:collapse;
+    font-weight:bold;
+    margin-bottom:15px;
+    width:100%;
+}
+
+.warningPrimaryBox {
+    vertical-align:central;
+    text-align:center;
+    border: 1px solid black;
+    justify-content: center;
+    align-items: center;
+    font-size: 24pt;
+    min-width:1em;
+}
+
+.warningNoteBox {
+    border: 1px solid black;
+    text-align: center;
+}
+
+.bulletinGridPrimary {
+    grid-template-columns: 2em 1fr 2cm;
+    border: 1px solid black;
+}
+
+.bulletinGridWithMembers {
+    grid-template-columns: 2em 1fr 2cm 2cm 1fr;
+    border-top: 1px solid black;
+    border-right: 1px solid black;
+    border-left: 1px solid black;
+}
+
+.b-hdr-ssmall{
+    font-weight:bold;
+    font-size:xx-small;
+    border-bottom: 1px solid black;
+    border-right: 1px solid black;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.b-hdr-small {
+    font-weight: bold;
+    font-size: x-small;
+    border-bottom: 1px solid black;
+    padding: 0px 2px;
+}
+
+.b-row-nr {
+    font-weight: bold;
+    font-size: larger;
+    border-top: 1px solid black;
+    border-bottom: 1px solid black;
+    border-right: 1px solid black;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.b-row-div {
+    border-top: 1px solid black;
+    border-bottom: 1px solid black;
+}
+
+.b-row-div p {
+    margin:2px 5px;
+    white-space:pre-line;
+    line-height:normal;
+}
+
+.b-row-div h5 {
+    margin: 3px;
+}
+
+.checkBlock {
+    width: 2cm;
+    min-height: 2cm;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.checkBox {
+    border: 1px solid black;
+    width: 1cm;
+    height: 1cm;
+    background: white;
+    cursor: pointer;
+}
+
+.checkBox:hover {
+    box-shadow: #00589c 0px 0px 10px 5px;
+}
+
+.candidatesList {
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    padding:1px 0px 0px 1px;
+}
+
+.candidatesList div{
+    border: 1px dashed darkgrey;
+    margin:0px 1px 1px 0px;
+    cursor:pointer;
+}
+
+.serif{
+    font-family:'Times New Roman', Times, serif;
+}
+
+.specialSubmit{
+    margin-top:15px;
+    width:100%;
+    font-weight:bold;
+    font-size:larger;
+}

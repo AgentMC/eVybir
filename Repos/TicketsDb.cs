@@ -1,4 +1,5 @@
 ﻿using eVybir.Infra;
+using System.Text;
 
 namespace eVybir.Repos
 {
@@ -65,8 +66,8 @@ insert into {TTickets} (Id,                        UserId,     CampaignId,     C
             using var cmd = conn.CreateCommand();
             var pTicketId = cmd.AddParameter("ticketId", ticketId);
             cmd.CommandText = $@"
---     0      1               2?          3                4       5?      6?             7
-select cc.Id, cc.CandidateId, cc.GroupId, cc.DisplayOrder, c.Name, c.Date, c.Description, c.EntryType
+--     0      1               2?          3                4       5?      6?             7            8
+select cc.Id, cc.CandidateId, cc.GroupId, cc.DisplayOrder, c.Name, c.Date, c.Description, c.EntryType, cc.CampaignId
 from {TCCandidates} cc
 	join {TCandidates} c
 		on cc.CandidateId = c.Id
@@ -84,8 +85,36 @@ order by DisplayOrder";
                                      (string)reader[4],
                                      reader.As<DateTime?>(5),
                                      reader.As<string?>(6),
-                                     (Candidate.EntryType)reader[7]));
+                                     (Candidate.EntryType)reader[7]),
+                                 (int)reader[8]);
             }
+        }
+
+        public static void Vote(Guid ticketId, int campaignId, int[] voteIds)
+        {
+            using var conn = OpenConnection();
+            using var cmd = conn.CreateCommand();
+            var pCampaignId = cmd.AddParameter("campaignId", campaignId);
+            StringBuilder command = new("SET XACT_ABORT ON;\r\nBEGIN TRANSACTION;\r\n");
+
+            command.AppendLine($"insert into {TVotes} (Id, CampaignId, PreferenceIdx, CampaignCandidateId) values");
+            for (int i = 0; i < voteIds.Length; i++)
+            {
+                var pVoteId = cmd.AddParameter("voteId" + i, Guid.CreateVersion7());
+                var pPrefIdx = cmd.AddParameter("prefId" + i, i);
+                var pParticipant = cmd.AddParameter("partId" + i, voteIds[i]);
+                command.Append($"(@{pVoteId}, @{pCampaignId}, @{pPrefIdx}, @{pParticipant})");
+                command.AppendLine(i < voteIds.Length - 1? "," : ";");
+            }
+
+            var pTicketId = cmd.AddParameter("ticketId", ticketId);
+            var pNow = cmd.AddParameter("now", DateTime.UtcNow.AsKyivTimeZone());
+            command.AppendLine($"update {TTickets} set CommittedDate=@{pNow} where Id=@{pTicketId};");
+
+            command.AppendLine("COMMIT TRANSACTION;");
+
+            cmd.CommandText = command.ToString();
+            cmd.ExecuteNonQuery();
         }
     }
 }

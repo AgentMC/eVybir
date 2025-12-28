@@ -33,9 +33,9 @@ namespace eVybir.Repos
                     var pCandId = cmd.AddParameter("candId" + i, participant.CandidateId);
                     var pGrpId = cmd.AddParameterNullable("grpId" + i, participant.GroupId);
                     var pDisp = cmd.AddParameter("dispOrd" + i, participant.DisplayOrder);
-                    command.AppendLine($"(@{pId}, @{pCandId}, @{pGrpId}, @{pDisp}),");
+                    command.Append($"(@{pId}, @{pCandId}, @{pGrpId}, @{pDisp})");
+                    command.AppendLine(i < participants.Count - 1 ? "," : ";");
                 }
-                while (command[^1] != ')') command.Length--;
             }
             cmd.CommandText = command.ToString();
             cmd.ExecuteNonQuery();
