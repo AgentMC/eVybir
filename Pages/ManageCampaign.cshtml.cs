@@ -8,15 +8,9 @@ namespace eVybir.Pages
 {
     public class ManageCampaignModel : LoginAwarePageBase
     {
-        public ManageCampaignModel() 
-        {
-            Campaigns = CampaignsDb.GetFutureCampaigns();
-        }
-
         public override string Title => "Призначити кандидатів";
 
-        public IEnumerable<DbWrapped<int, Campaign>> Campaigns { get; init; }
-
+        public IEnumerable<DbWrapped<int, Campaign>> Campaigns { get; private set; }
 
         public bool ShowOnlyList { get; private set; } = true;
 
@@ -27,11 +21,13 @@ namespace eVybir.Pages
         public List<Participant> ParticipantsRoot { get; set; } 
 
         public int[] IncludedCandidateIds { get; set; }
-        public int[] SortedCandidateIds { get; set; }
 
+        public int[] SortedCandidateIds { get; set; }
 
         public IActionResult OnGet(int? id)
         {
+            if (!CheckRole<Pages_ManageCampaign>(out var failed)) return failed!;
+            Campaigns = CampaignsDb.GetFutureCampaigns();
             if (id.HasValue)
             {
                 CurrentCampaignId = id.Value;
@@ -60,6 +56,7 @@ namespace eVybir.Pages
 
         public IActionResult OnPost(int? id, string inclusionModel)
         {
+            if (!CheckRole<Pages_ManageCampaign>(out var failed)) return failed!;
             if (!id.HasValue) return NotFound();
             var updateModel = JsonSerializer.Deserialize<List<Participant>>(inclusionModel)!;
             for (int i = updateModel.Count-1; i >= 0 ; i--)

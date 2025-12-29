@@ -13,7 +13,8 @@ namespace eVybir.Pages
 
         public IActionResult OnPost(int candId, string candName, DateTime? candDate, string? candDesc, Candidate.EntryType candKind) 
         {
-            if(candId == DEFAULT_ID)
+            if (!CheckRole(out var failed)) return failed!;
+            if (candId == DEFAULT_ID)
             {
                 CandidatesDb.AddCandidate(candName, candDate, candDesc, candKind);
             }
@@ -26,6 +27,7 @@ namespace eVybir.Pages
 
         public IActionResult OnPostDelete(int id)
         {
+            if (!CheckRole(out var failed)) return failed!;
             CandidatesDb.DeleteCandidate(id);
             return BackToList();
         }

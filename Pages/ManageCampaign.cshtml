@@ -34,7 +34,7 @@
                         <td>@camp.Entity.Name</td>
                         <td>@camp.Entity.Start</td>
                         <td>@camp.Entity.End</td>
-                        <td><a href="@(LoginAwarePageBase.Location<Pages_ManageCampaign>(camp.Key))">Управляти</a></td>
+                        <td><a asp-page="@(LoginAwarePageBase.Location<Pages_ManageCampaign>())" asp-route-id="@camp.Key">Управляти</a></td>
                     </tr>
                 }
             </tbody>
@@ -61,7 +61,7 @@
             <div style="grid-column:2/4;">Кандидати в бюлетені</div>
             <div>
                 <script>
-                    document.sortedIds = @JsonSerializer.Serialize(Model.SortedCandidateIds);
+                    document.sortedIds = @(JsonSerializer.Serialize(Model.SortedCandidateIds));
                 </script>
                 <select multiple size="20" class="leftColMax35vw overflow-auto" style="min-width:16vw;" id="leftSelect" onclick="updateButtonStates()">
                     @foreach (var cand in Model.Candidates.Where(dbc => !Model.IncludedCandidateIds.Contains(dbc.Key)))

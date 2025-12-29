@@ -13,6 +13,7 @@ namespace eVybir.Pages
 
         public IActionResult OnPost(int camId, string camName, DateTime startDate, DateTime endDate)
         {
+            if (!CheckRole(out var failed)) return failed!;
             if (camId == DEFAULT_ID)
             {
                 CampaignsDb.AddCampaign(camName, startDate.AsKyivTimeZone(), endDate.AsKyivTimeZone());
@@ -26,6 +27,7 @@ namespace eVybir.Pages
 
         public IActionResult OnPostDelete(int id)
         {
+            if (!CheckRole(out var failed)) return failed!;
             CampaignsDb.DeleteCampaign(id);
             return BackToList();
         }

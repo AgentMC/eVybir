@@ -13,12 +13,14 @@ namespace eVybir.Pages
 
         public IActionResult OnPostToggle(int id, bool currentState) 
         {
+            if (!CheckRole(out var failed)) return failed!;
             PermissionsDb.SetActive(id, !currentState);
             return BackToList();
         }
 
         public IActionResult OnPost(int userId, Login.AccessLevelCode userRole)
         {
+            if (!CheckRole(out var failed)) return failed!;
             PermissionsDb.AddUser(userId, userRole);
             return BackToList();
         }

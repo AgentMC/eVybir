@@ -2,7 +2,6 @@ using eVybir.Infra;
 using eVybir.Pages.Shared;
 using eVybir.Repos;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace eVybir.Pages
 {
@@ -10,12 +9,7 @@ namespace eVybir.Pages
     {
         public override string Title => "Виборчі звіти";
 
-        public ReportModel() 
-        {
-            Campaigns = CampaignsDb.GetPastOrCurrentCampaigns().ToDictionary(db => db.Key, db => db.Entity);
-        }
-
-        public Dictionary<int, Campaign> Campaigns { get; init; }
+        public Dictionary<int, Campaign> Campaigns { get; private set; }
 
         public int? CurrentCampaignId { get; private set; }
 
@@ -31,6 +25,7 @@ namespace eVybir.Pages
 
         public IActionResult OnGet(int? id)
         {
+            Campaigns = CampaignsDb.GetPastOrCurrentCampaigns().ToDictionary(db => db.Key, db => db.Entity);
             if (!id.HasValue && !Request.Path.Value!.EndsWith("/"))
                 return Redirect(Location<Pages_Report>() + "/");
             CurrentCampaignId = id;

@@ -10,19 +10,23 @@ namespace eVybir.Pages
 
         public int? VoterId { get; set; }
 
-        public void OnGet(int? id)
+        public IActionResult OnGet(int? id)
         {
+            if (!CheckRole<Pages_CheckVoter>(out var failed)) return failed!;
             VoterId = id;
+            return Page();
         }
 
         public IActionResult OnPostRegister(int id, int campaignId)
         {
+            if (!CheckRole<Pages_CheckVoter>(out var failed)) return failed!;
             TicketsDb.Register(campaignId, id, true);
             return RedirectToPage(Location<Pages_CheckVoter>());
         }
 
         public IActionResult OnPostCancel(Guid ticketId)
         {
+            if (!CheckRole<Pages_CheckVoter>(out var failed)) return failed!;
             TicketsDb.CancelTicket(ticketId);
             return RedirectToPage(Location<Pages_CheckVoter>());
         }

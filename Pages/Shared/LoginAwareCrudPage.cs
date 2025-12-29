@@ -12,5 +12,12 @@ namespace eVybir.Pages.Shared
         }
 
         public const int DEFAULT_ID = -1;
+
+        protected bool CheckRole(out IActionResult? failed) => CheckRole(PageType, out failed);
+
+        public virtual IActionResult OnGet()
+        {
+            return CheckRole(out var failed) ? Page() : failed!;
+        }
     }
 }

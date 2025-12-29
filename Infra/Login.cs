@@ -1,4 +1,5 @@
-﻿using eVybir.Repos;
+﻿using eVybir.Pages;
+using eVybir.Repos;
 using System.Text;
 using System.Text.Json;
 using static eVybir.Infra.Login;
@@ -30,6 +31,19 @@ namespace eVybir.Infra
 
         public string Role => HumanizeAccessLevelCode(AccessLevel);
 
+        private static readonly Type[] Authenticated = [typeof(Pages_Register), typeof(Pages_Vote)],
+                                       LecAndAdmin = [typeof(Pages_CheckVoter)],
+                                       CecAndAdmin = [typeof(Pages_Campaigns), typeof(Pages_Candidates), typeof(Pages_ManageCampaign)],
+                                       Admin = [typeof(Pages_Users)];
+
+        public bool Granted(Type t)
+        {
+            if (Authenticated.Contains(t)) return AccessLevel != AccessLevelCode.None;
+            if (LecAndAdmin.Contains(t)) return AccessLevel == AccessLevelCode.Admin || AccessLevel == AccessLevelCode.LEC;
+            if (CecAndAdmin.Contains(t)) return AccessLevel == AccessLevelCode.Admin || AccessLevel == AccessLevelCode.CEC;
+            if (Admin.Contains(t)) return AccessLevel == AccessLevelCode.Admin;
+            return false;
+        }
 
         public const string COOKIE = "eVybirId";
 

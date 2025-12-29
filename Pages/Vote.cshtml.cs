@@ -16,8 +16,9 @@ namespace eVybir.Pages
 
         public int CampaignId { get; set; }
 
-        public void OnGet(Guid id)
+        public IActionResult OnGet(Guid id)
         {
+            if (!CheckRole<Pages_Vote>(out var failed)) return failed!;
             var grp = TicketsDb.GetBulletinByTicket(id)
                                .GroupBy(b => b.Location.GroupId);
             CampaignId = grp.First().First().CampaignId;
@@ -27,10 +28,12 @@ namespace eVybir.Pages
                                                                         grp.FirstOrDefault(g => g.Key == b.Location.CandidateId)?.ToArray() ?? []))
                                      .ToArray());
             IsPartyListBasedElection = Bulletin.PrimaryEntries.Any(e => e.Children.Length > 0);
+            return Page();
         }
 
         public IActionResult OnPost(Guid id, int campaignId, string castIds)
         {
+            if (!CheckRole<Pages_Vote>(out var failed)) return failed!;
             TicketsDb.Vote(id, campaignId, JsonSerializer.Deserialize<int[]>(castIds)!);
             return Redirect(Location<Pages_Register>());
         }

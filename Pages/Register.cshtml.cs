@@ -10,18 +10,16 @@ namespace eVybir.Pages
 
         public override string Title => "Бюлетені";
 
-        public void OnGet()
-        {
-        }
-
         public IActionResult OnPostRegister(int campaignId) 
         {
+            if (!CheckRole(out var failed)) return failed!;
             TicketsDb.Register(campaignId, LoginData!.Id, false);
             return BackToList();
         }
 
         public IActionResult OnPostCancel(Guid ticketId) 
         {
+            if (!CheckRole(out var failed)) return failed!;
             TicketsDb.CancelTicket(ticketId);
             return BackToList();
         }
