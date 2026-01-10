@@ -19,9 +19,12 @@ namespace eVybir.Pages
 
         public IActionResult OnPostCancel(Guid ticketId) 
         {
-            if (!CheckRole(out var failed)) return failed!;
-            TicketsDb.CancelTicket(ticketId);
-            return BackToList();
+            if (!CheckRole(out var failed))
+                return failed!;
+            else if (TicketsDb.CancelTicket(ticketId, LoginData!.Id))
+                return BackToList();
+            else
+                return BadRequest("Ticket was not cancelled, try again");
         }
     }
 }

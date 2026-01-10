@@ -24,11 +24,14 @@ namespace eVybir.Pages
             return RedirectToPage(Location<Pages_CheckVoter>());
         }
 
-        public IActionResult OnPostCancel(Guid ticketId)
+        public IActionResult OnPostCancel(int id, Guid ticketId)
         {
-            if (!CheckRole<Pages_CheckVoter>(out var failed)) return failed!;
-            TicketsDb.CancelTicket(ticketId);
-            return RedirectToPage(Location<Pages_CheckVoter>());
+            if (!CheckRole<Pages_CheckVoter>(out var failed))
+                return failed!;
+            else if (TicketsDb.CancelTicket(ticketId, id))
+                return RedirectToPage(Location<Pages_CheckVoter>());
+            else
+                return BadRequest("Ticket was not cancelled, try again");
         }
     }
 }

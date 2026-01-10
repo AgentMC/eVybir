@@ -51,13 +51,14 @@ insert into {TTickets} (Id,                        UserId,     CampaignId,     C
             cmd.ExecuteNonQuery();
         }
 
-        public static void CancelTicket(Guid ticketId)
+        public static bool CancelTicket(Guid ticketId, int userId)
         {
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
             var pTicketId = cmd.AddParameter("tId", ticketId);
-            cmd.CommandText = $"delete from {TTickets} where Id=@{pTicketId}";
-            cmd.ExecuteNonQuery();
+            var pUserId = cmd.AddParameter("userId", userId);
+            cmd.CommandText = $"delete from {TTickets} where Id=@{pTicketId} and UserId = @{pUserId}";
+            return cmd.ExecuteNonQuery() > 0;
         }
 
         public static IEnumerable<BulletinEntry> GetBulletinByTicket(Guid ticketId)
