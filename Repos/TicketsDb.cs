@@ -90,13 +90,21 @@ order by DisplayOrder";
             }
         }
 
-        public static void Vote(Guid ticketId, int campaignId, int[] voteIds)
+        public static bool Vote(Guid ticketId, int campaignId, int[] voteIds)
         {
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
-            var pCampaignId = cmd.AddParameter("campaignId", campaignId);
-            StringBuilder command = new("SET XACT_ABORT ON;\r\nBEGIN TRANSACTION;\r\n");
+            StringBuilder command = new("SET XACT_ABORT ON;\r\nBEGIN TRANSACTION;\r\n"); //on error e.g. dupe keys transaction will be aborted and rolled back
 
+            var pRowCount = cmd.Parameters.Add("rc", System.Data.SqlDbType.Int) ;
+            pRowCount.Direction = System.Data.ParameterDirection.Output;
+            var pTicketId = cmd.AddParameter("ticketId", ticketId);
+            var pNow = cmd.AddParameter("now", DateTime.UtcNow.AsKyivTimeZone());
+            command.AppendLine($"update {TTickets} set CommittedDate=@{pNow} where Id=@{pTicketId} and CommittedDate is NULL;"); //we only update an uncommitted ticket
+
+            command.AppendLine($"set @{pRowCount} = @@ROWCOUNT;\r\nif @{pRowCount} = 0 ROLLBACK TRANSACTION else BEGIN"); //was there an uncommitted ticket? if yes let's insert the vote(s), otherwise rollback
+
+            var pCampaignId = cmd.AddParameter("campaignId", campaignId);
             command.AppendLine($"insert into {TVotes} (Id, CampaignId, PreferenceIdx, CampaignCandidateId) values");
             for (int i = 0; i < voteIds.Length; i++)
             {
@@ -107,14 +115,10 @@ order by DisplayOrder";
                 command.AppendLine(i < voteIds.Length - 1? "," : ";");
             }
 
-            var pTicketId = cmd.AddParameter("ticketId", ticketId);
-            var pNow = cmd.AddParameter("now", DateTime.UtcNow.AsKyivTimeZone());
-            command.AppendLine($"update {TTickets} set CommittedDate=@{pNow} where Id=@{pTicketId};");
-
-            command.AppendLine("COMMIT TRANSACTION;");
+            command.AppendLine($"COMMIT TRANSACTION;\r\nEND;\r\nselect @{pRowCount}"); //if all is good, commit both changes. Return the number of rows, zero meaning no vote was cast.
 
             cmd.CommandText = command.ToString();
-            cmd.ExecuteNonQuery();
+            return (int?)cmd.ExecuteScalar() != 0;
         }
     }
 }

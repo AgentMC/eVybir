@@ -33,9 +33,12 @@ namespace eVybir.Pages
 
         public IActionResult OnPost(Guid id, int campaignId, string castIds)
         {
-            if (!CheckRole<Pages_Vote>(out var failed)) return failed!;
-            TicketsDb.Vote(id, campaignId, JsonSerializer.Deserialize<int[]>(castIds)!);
-            return Redirect(Location<Pages_Register>());
+            if (!CheckRole<Pages_Vote>(out var failed)) 
+                return failed!;
+            else if (TicketsDb.Vote(id, campaignId, JsonSerializer.Deserialize<int[]>(castIds)!))
+                return Redirect(Location<Pages_Register>());
+            else
+                return BadRequest("The vote was not cast, try again");
         }
     }
 }
