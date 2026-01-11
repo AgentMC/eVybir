@@ -16,22 +16,26 @@ namespace eVybir.Pages
 
         public int CurrentCampaignId { get; private set; }
 
-        public List<DbWrapped<int, Candidate>> Candidates { get; set; } 
+        public List<DbWrapped<int, Candidate>> Candidates { get; private set; } 
 
-        public List<Participant> ParticipantsRoot { get; set; } 
+        public List<Participant> ParticipantsRoot { get; private set; } 
 
-        public int[] IncludedCandidateIds { get; set; }
+        public int[] IncludedCandidateIds { get; private set; }
 
-        public int[] SortedCandidateIds { get; set; }
+        public int[] SortedCandidateIds { get; private set; }
+
+        public Campaign CurrentCampaign{ get; private set; }
+
 
         public IActionResult OnGet(int? id)
         {
             if (!CheckRole<Pages_ManageCampaign>(out var failed)) return failed!;
-            Campaigns = CampaignsDb.GetFutureCampaigns();
+            Campaigns = CampaignsDb.GetAllCampaigns();
             if (id.HasValue)
             {
                 CurrentCampaignId = id.Value;
-                if (!Campaigns.Any(c => c.Key == CurrentCampaignId)) // wrong, race condition etc.
+                CurrentCampaign = Campaigns.FirstOrDefault(c => c.Key == CurrentCampaignId)?.Entity;
+                if (CurrentCampaign == null) // wrong, race condition etc.
                 {
                     return RedirectToPage(Location<Pages_ManageCampaign>());
                 }
@@ -58,6 +62,8 @@ namespace eVybir.Pages
         {
             if (!CheckRole<Pages_ManageCampaign>(out var failed)) return failed!;
             if (!id.HasValue) return NotFound();
+            var c = CampaignsDb.GetCampaignById(id.Value);
+            if (c.State != Campaign.CampaignState.Future) return BadRequest("Unable to edit, campaign state is " + c.UfState);
             var updateModel = JsonSerializer.Deserialize<List<Participant>>(inclusionModel)!;
             for (int i = updateModel.Count-1; i >= 0 ; i--)
             {

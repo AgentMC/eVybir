@@ -17,5 +17,43 @@ namespace eVybir.Infra
                 return $"{Start.ToString("D", cultureUa)} {NDASH} {End.ToString("D", cultureUa)}";
             }
         }
+
+        public enum CampaignState
+        {
+            Future,
+            OnCooldown,
+            Ongoing,
+            Completed
+        }
+
+        public CampaignState State
+        {
+            get
+            {
+                var now = DateTimeOffset.Now;
+                return Start > now 
+                    ? (Start - now).TotalDays > 1.0 
+                        ? CampaignState.Future 
+                        : CampaignState.OnCooldown
+                    : End > now 
+                        ? CampaignState.Ongoing 
+                        : CampaignState.Completed;
+            }
+        }
+
+        public string UfState
+        {
+            get
+            {
+                return State switch
+                {
+                    CampaignState.Future => "Заплановано",
+                    CampaignState.OnCooldown => "Тиха доба",
+                    CampaignState.Ongoing => "У процесі",
+                    CampaignState.Completed => "Завершено",
+                    _ => throw new NotImplementedException()
+                };
+            }
+        }
     }
 }

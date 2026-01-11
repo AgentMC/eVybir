@@ -16,9 +16,8 @@ namespace eVybir.Repos
                 yield return new((int)reader[0], new((string)reader[1], (DateTimeOffset)reader[2], (DateTimeOffset)reader[3]));
             }
         }
+        
         public static DbCampaigns GetAllCampaigns() => GetCampaigns();
-
-        public static DbCampaigns GetFutureCampaigns() => GetCampaigns($"where StartTime > '{DateTime.Now.AddDays(1):O}'");
 
         public static DbCampaigns GetPastOrCurrentCampaigns() => GetCampaigns($"where StartTime < '{DateTime.Now:O}'");
 

@@ -1,6 +1,8 @@
 ﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
 // for details on configuring this project to bundle and minify static web assets.
 
+//Candidates
+
 function editCandidate(key, name, date, description, kind) {
     document.getElementById('candId').value = key;
     document.getElementById('candName').value = name;
@@ -9,12 +11,16 @@ function editCandidate(key, name, date, description, kind) {
     document.getElementById('candKind').value = kind;
 }
 
+//Campaign
+
 function editCampaign(key, name, dateStart, dateEnd) {
     document.getElementById('camId').value = key;
     document.getElementById('camName').value = name;
     document.getElementById('startDate').value = dateStart;
     document.getElementById('endDate').value = dateEnd;
 }
+
+//Participants
 
 function switchCampaign() {
     if (!document.dirty || confirm("Зміни на цій сторінці не були збережені!\r\nПерейти на іншу виборчу подію?")) {
@@ -37,6 +43,7 @@ function filterCandidates() {
 
 function _beginOpCore(parseModel = true) {
     var hidden = $('#inclusionModel')[0];
+    if (hidden == undefined) return undefined;
     return {
         "LeftSelect": $('#leftSelect')[0],
         "RightSelect": $('#rightSelect')[0],
@@ -145,6 +152,7 @@ function _setState(id, enabled) {
 
 function updateButtonStates(o) {
     o ??= _beginOpCore();
+    if (!o) return;
     var lsi = o.LeftSelect.selectedIndex;
     var rsi = o.RightSelect.selectedIndex;
     var rLocation = {};
@@ -185,6 +193,7 @@ function updateButtonStates(o) {
 
 function _beginOp(parseModel = true) {
     var o = _beginOpCore(parseModel);
+    if (o == undefined) throw "Invalid system state. This function must not be called unless the Campaign is in editable (Future) state!"
     o.Finalize = function () {
         if (this.Model == undefined) throw "Model, when not parsed, must be provided before calling Finalize()";
         document.dirty = true;
@@ -305,6 +314,8 @@ function setOrder() {
     setOrderInternal(o.Model);
     o.Finalize();
 }
+
+//Vote
 
 function _setSingularVote(participantId) {
     $('#castIds').val(JSON.stringify([Number.parseInt(participantId)]));
