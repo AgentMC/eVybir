@@ -248,3 +248,7 @@ body {
     padding: 4px;
     display: inline-block;
 }
+
+option {
+    min-inline-size: min-content; /*see moz bug 2007620, crbug 471235858*/
+}

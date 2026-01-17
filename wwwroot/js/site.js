@@ -244,6 +244,7 @@ function addAsChild() {
 function removeFromList() {
     var o = _beginOp();
     var option = o.RightSelect.selectedOptions[0];
+    var sIdx = o.RightSelect.selectedIndex;
     var location = _getParticipantLocation(o.Model, option.value);
     if (location == undefined) {
         alert("Unable to get model location for the selected participant's id!");
@@ -251,6 +252,12 @@ function removeFromList() {
     }
     o.LeftSelect.options.add(option, _getNextSortedId(o.LeftSelect, option.value));
     if (location.Child == -1) { //parent
+        var childCount = o.Model[location.Parent].Children.length;
+        for (var i = 0; i < childCount; i++) {
+            var chOp = o.RightSelect.options[sIdx];
+            o.LeftSelect.options.add(chOp, _getNextSortedId(o.LeftSelect, chOp.value));
+            $(chOp).removeClass('node-secondary')
+        }
         o.Model.splice(location.Parent, 1);
         $(option).removeClass('node-primary')
     } else { //child
