@@ -22,13 +22,13 @@
                     <td>@camp.Entity.Start</td>
                     <td>@camp.Entity.End</td>
                     <td>
-                        @if(camp.Entity.State == Campaign.CampaignState.Future)
+                        @if(camp.Entity.State == Campaign.CampaignState.Future || Model.LoginData?.AccessLevel == Login.AccessLevelCode.Admin)
                         {
-                             <form method="post" asp-page-handler="delete">
+                            <form method="post" asp-page-handler="delete" class="@(camp.Entity.State != Campaign.CampaignState.Future ? "adminOnlyEdit" : "")">
                                 <input type="hidden" name="id" value="@camp.Key" />
-                                <input type="button" value="✒️Редагувати" onclick="editCampaign(@camp.Key, '@camp.Entity.Name', '@(camp.Entity.Start.ToString("yyyy-MM-ddThh:mm"))', '@(camp.Entity.End.ToString("yyyy-MM-ddThh:mm"))')" />
+                                <input type="button" value="✒️Редагувати" onclick="editCampaign(@camp.Key, '@camp.Entity.Name', '@(camp.Entity.Start.ToString("yyyy-MM-ddTHH:mm"))', '@(camp.Entity.End.ToString("yyyy-MM-ddTHH:mm"))')" />
                                 <input type="submit" value="❌Видалити" />
-                             </form>
+                            </form>
                         } 
                         else
                         {

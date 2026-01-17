@@ -37,7 +37,7 @@ namespace eVybir.Pages
         private bool CheckCanModify(int id, out IActionResult? fault)
         {
             var c = CampaignsDb.GetCampaignById(id);
-            if(c.State != Campaign.CampaignState.Future)
+            if (!(c.State == Campaign.CampaignState.Future || LoginData?.AccessLevel == Login.AccessLevelCode.Admin))
             {
                 fault = BadRequest("Unable to edit campaign, state = " + c.UfState);
                 return false;

@@ -20,6 +20,7 @@ namespace eVybir.Pages
             }
             else
             {
+                if (!CheckCanModify(candId, false, out var fault)) return fault!;
                 CandidatesDb.UpdateCandidate(candId, candName, candDate, candDesc, candKind);
             }
             return BackToList();
@@ -28,8 +29,21 @@ namespace eVybir.Pages
         public IActionResult OnPostDelete(int id)
         {
             if (!CheckRole(out var failed)) return failed!;
+            if (!CheckCanModify(id, true, out var fault)) return fault!;
             CandidatesDb.DeleteCandidate(id);
             return BackToList();
+        }
+
+        private bool CheckCanModify(int id, bool deleting, out IActionResult? fault)
+        {
+            var isUsed = CandidatesDb.GetCandidateHasPastUsesById(id);
+            if (isUsed && (deleting || LoginData?.AccessLevel != Login.AccessLevelCode.Admin))
+            {
+                fault = BadRequest("Unable to edit candidate, used in past Campaigns!");
+                return false;
+            }
+            fault = null;
+            return true;
         }
     }
 }

@@ -17,6 +17,44 @@ namespace eVybir.Repos
             }
         }
 
+        public static bool GetCandidateHasPastUsesById(int id)
+        {
+            using var conn = OpenConnection();
+            using var cmd = conn.CreateCommand();
+            var pId = cmd.AddParameter("candId", id);
+            cmd.CommandText = $@"
+select count(cc.Id)
+from CampaignCandidates cc
+	join Campaigns cs
+		on cc.CampaignId = cs.Id
+		and datediff_big(ss , CURRENT_TIMESTAMP, cs.StartTime)/86400.0 < 1.0
+		and cc.CandidateId = @{pId}";
+            return (int)cmd.ExecuteScalar() > 0;
+        }
+
+        public static IEnumerable<DbWrapped<Tuple<int, int>, Candidate>> GetCandidatesWithUse()
+        {
+            using var conn = OpenConnection();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = $@"
+select Id, Name, Date, Description, EntryType, count(Uid) as CampaignsUsed
+from {TCandidates} c
+	left join (
+		select cc.Id as Uid, cc.CandidateId
+		from {TCCandidates} cc
+		    join {TCampaigns} cs
+			    on cc.CampaignId = cs.Id
+			    and datediff_big(ss , CURRENT_TIMESTAMP, cs.StartTime)/86400.0 < 1.0
+	) t
+	on Id = CandidateId
+group by Id, Name, Date, Description, EntryType";
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                yield return new(Tuple.Create((int)reader[0], (int)reader[5]), new((string)reader[1], reader.As<DateTime?>(2), reader.As<string?>(3), (Candidate.EntryType)reader[4]));
+            }
+        }
+
         public static void AddCandidate(string name, DateTime? date, string? description, Candidate.EntryType entryKind)
         {
             using var conn = OpenConnection();

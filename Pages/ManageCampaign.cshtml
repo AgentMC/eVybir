@@ -9,7 +9,7 @@
         <option value="@candId" data-kind="@candidate.EntryKind" class="@($"{addClass}")">
             @candidate.Name
             @(candidate.Date.HasValue ? $"({candidate.Date.Value.ToShortDateString()})" : string.Empty) -
-            @(candidate.Kind)
+            @(candidate.UfEntryKind)
         </option>
     }
 }

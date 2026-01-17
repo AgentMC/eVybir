@@ -17,21 +17,34 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var cand in CandidatesDb.GetCandidates())
+            @foreach (var cand in CandidatesDb.GetCandidatesWithUse())
             {
+                var cData = cand.Entity;
+                var cId = cand.Key.Item1;
+                var cUsedInPast = cand.Key.Item2;
                 <tr>
-                    <td>@cand.Entity.Name</td>
-                    <td>@(cand.Entity.Date.HasValue ? cand.Entity.Date.Value.ToShortDateString() : "(Не вказано)")</td>
-                    <td class="ws-pre">@cand.Entity.Description</td>
-                    <td>@cand.Entity.Kind</td>
-                <td>
-                <form method="post" asp-page-handler="delete">
-                    <input type="hidden" name="id" value="@cand.Key" />
-                    <input type="button" value="✒️Редагувати" onclick="editCandidate(@cand.Key, '@cand.Entity.Name', @(cand.Entity.Date.HasValue? "'" + cand.Entity.Date.Value.ToString("yyyy-MM-dd") + "'" : "null"), @cand.Entity.Description.JsEscape(), '@cand.Entity.EntryKind')" />
-                    <input type="submit" value="❌Видалити" />
-                </form>
-                </td>
-            </tr>
+                    <td>@cData.Name</td>
+                    <td>@(cData.Date.HasValue ? cData.Date.Value.ToShortDateString() : "(Не вказано)")</td>
+                    <td class="ws-pre">@cData.Description</td>
+                    <td>@cData.UfEntryKind</td>
+                    <td>
+                        @if(cUsedInPast == 0 || Model.LoginData?.AccessLevel == Login.AccessLevelCode.Admin)
+                        {
+                            <form method="post" asp-page-handler="delete" class="@(cUsedInPast > 0 ? "adminOnlyEdit" : "")">
+                                <input type="hidden" name="id" value="@cId" />
+                                <input type="button" value="✒️Редагувати" onclick="editCandidate(@cId, '@cData.Name', @(cData.Date.HasValue? "'" + cData.Date.Value.ToString("yyyy-MM-dd") + "'" : "null"), @cData.Description.JsEscape(), '@cData.EntryKind')" />
+                                @if(cUsedInPast == 0)
+                                {
+                                    <input type="submit" value="❌Видалити" />
+                                }
+                            </form>
+                        }
+                        else
+                        {
+                            <p>Внесено до бюлетеней, заблокованих від змін: @cUsedInPast.</p>
+                        }
+                    </td>
+                </tr>
              }
         </tbody>
     </table>

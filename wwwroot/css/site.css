@@ -242,3 +242,9 @@ body {
     white-space: nowrap;
     text-shadow: 0 0 6px white;
 }
+
+.adminOnlyEdit {
+    background: red;
+    padding: 4px;
+    display: inline-block;
+}
