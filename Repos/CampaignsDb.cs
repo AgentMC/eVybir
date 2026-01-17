@@ -48,6 +48,7 @@ namespace eVybir.Repos
 
         public static void DeleteCampaign(int id)
         {
+            CampaignCandidatesDb.UpdateCampaignData(id, []);
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
             var pId = cmd.AddParameter("id", id);

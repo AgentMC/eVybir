@@ -22,16 +22,24 @@
                     <td>@camp.Entity.Start</td>
                     <td>@camp.Entity.End</td>
                     <td>
-                        <form method="post" asp-page-handler="delete">
-                            <input type="hidden" name="id" value="@camp.Key" />
-                            <input type="button" value="✒️Редагувати" onclick="editCampaign(@camp.Key, '@camp.Entity.Name', '@(camp.Entity.Start.ToString("yyyy-MM-ddThh:mm"))', '@(camp.Entity.End.ToString("yyyy-MM-ddThh:mm"))')" />
-                            <input type="submit" value="❌Видалити" />
-                        </form>
+                        @if(camp.Entity.State == Campaign.CampaignState.Future)
+                        {
+                             <form method="post" asp-page-handler="delete">
+                                <input type="hidden" name="id" value="@camp.Key" />
+                                <input type="button" value="✒️Редагувати" onclick="editCampaign(@camp.Key, '@camp.Entity.Name', '@(camp.Entity.Start.ToString("yyyy-MM-ddThh:mm"))', '@(camp.Entity.End.ToString("yyyy-MM-ddThh:mm"))')" />
+                                <input type="submit" value="❌Видалити" />
+                             </form>
+                        } 
+                        else
+                        {
+                            @camp.Entity.UfState
+                        }
                     </td>
                 </tr>
             }
         </tbody>
     </table>
+    <p class="text-bg-secondary text-warning text-center">Увага! При видаленні події також видаляється її список кандидатів!</p>
 </div>
 
 <div>

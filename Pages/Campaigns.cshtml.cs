@@ -20,6 +20,7 @@ namespace eVybir.Pages
             }
             else
             {
+                if (!CheckCanModify(camId, out var fault)) return fault!;
                 CampaignsDb.UpdateCampaign(camId, camName, startDate.AsKyivTimeZone(), endDate.AsKyivTimeZone());
             }
             return BackToList();
@@ -28,8 +29,21 @@ namespace eVybir.Pages
         public IActionResult OnPostDelete(int id)
         {
             if (!CheckRole(out var failed)) return failed!;
+            if (!CheckCanModify(id, out var fault)) return fault!;
             CampaignsDb.DeleteCampaign(id);
             return BackToList();
+        }
+
+        private bool CheckCanModify(int id, out IActionResult? fault)
+        {
+            var c = CampaignsDb.GetCampaignById(id);
+            if(c.State != Campaign.CampaignState.Future)
+            {
+                fault = BadRequest("Unable to edit campaign, state = " + c.UfState);
+                return false;
+            }
+            fault = null;
+            return true;
         }
     }
 }
