@@ -1,12 +1,13 @@
 ﻿using eVybir.Pages;
 using eVybir.Repos;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using static eVybir.Infra.Login;
 
 namespace eVybir.Infra
 {
-    public record Login(int Id, string Name, AccessLevelCode AccessLevel, bool Enabled)
+    public record Login(int Id, string Name, AccessLevelCode AccessLevel, bool Enabled, DateTime expire)
     {
         public enum AccessLevelCode
         {
@@ -62,7 +63,7 @@ namespace eVybir.Infra
             var userName = IdentityResolver.ResolveName(id);
             accessLevelCode ??= IdentityResolver.ResolveAge(id) >= 18 ? AccessLevelCode.Voter : AccessLevelCode.None;
 
-            return new(id, userName, accessLevelCode.Value, enabled);
+            return new(id, userName, accessLevelCode.Value, enabled, DateTime.UtcNow.AddMinutes(30));
         }
 
         private static readonly JsonSerializerOptions options = new()
@@ -72,14 +73,36 @@ namespace eVybir.Infra
             UnmappedMemberHandling = System.Text.Json.Serialization.JsonUnmappedMemberHandling.Skip
         };
 
+        private static readonly byte[] key = [116, 168, 1, 25, 199, 33, 175, 233, 14, 182, 151, 100, 242, 173, 201, 157, 71, 3, 12, 227, 86, 244, 8, 68, 51, 35, 63, 169, 151, 216, 61, 99];
+
+
         public static Login? Deserialize(string input)
         {
-            return JsonSerializer.Deserialize<Login>(Encoding.UTF8.GetString(Convert.FromBase64String(input)), options);
+            var deBase64ed = Convert.FromBase64String(input);
+            using var aes = Aes.Create();
+            aes.Key = key;
+            aes.IV = deBase64ed[..16];
+            using var decryptor = aes.CreateDecryptor();
+            using var ms = new MemoryStream(deBase64ed[16..]);
+            using var ds = new CryptoStream(ms, decryptor, CryptoStreamMode.Read);
+            using var sr = new StreamReader(ds, Encoding.UTF8);
+            return JsonSerializer.Deserialize<Login>(sr.ReadToEnd(), options);
         }
 
         public static string Serialize(Login login)
         {
-            return Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(login)));
+            using var aes = Aes.Create();
+            aes.Key = key;
+            aes.GenerateIV();
+            using var encryptor = aes.CreateEncryptor();
+            using var ms = new MemoryStream();
+            ms.Write(aes.IV);
+            using (var es = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
+            {
+                using var sw = new StreamWriter(es, Encoding.UTF8);
+                sw.Write(JsonSerializer.Serialize(login));
+            }//required to FlushFinalBlock() otherwise must be called manually.
+            return Convert.ToBase64String(ms.ToArray());
         }
     }
 }

@@ -17,7 +17,18 @@ namespace eVybir.Pages.Shared
                 {
                     _loginCheckDone = true;
                     var cookieValue = HttpContext.Request.Cookies[Login.COOKIE];
-                    if (cookieValue != null) field = Login.Deserialize(cookieValue);
+                    if (cookieValue != null)
+                    {
+                        try
+                        {
+                            var cookieData = Login.Deserialize(cookieValue);
+                            field = cookieData?.expire > DateTime.Now ? cookieData : null;
+                        }
+                        catch
+                        {
+                            field = null;
+                        }
+                    }
                 }
                 return field;
             }
