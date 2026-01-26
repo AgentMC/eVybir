@@ -8,7 +8,7 @@ namespace eVybir.Repos
         {
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
-            var pId = cmd.Parameters.AddWithValue("id", id);
+            var pId = cmd.AddParameter("id", id);
             cmd.CommandText = $"select AccessLevel from {TPermissions} where Active = 1 and UserId = @{pId}";
             var result = (int?)cmd.ExecuteScalar();
             return result;
@@ -30,8 +30,8 @@ namespace eVybir.Repos
         {
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
-            var pId = cmd.Parameters.AddWithValue("id", id);
-            var pActive = cmd.Parameters.AddWithValue("active", active);
+            var pId = cmd.AddParameter("id", id);
+            var pActive = cmd.AddParameter("active", active);
             cmd.CommandText = $"update {TPermissions} set Active = @{pActive} where UserId = @{pId}";
             cmd.ExecuteNonQuery();
         }
@@ -40,9 +40,9 @@ namespace eVybir.Repos
         {
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
-            var pId = cmd.Parameters.AddWithValue("id", userId);
-            var pAccess = cmd.Parameters.AddWithValue("access", accessLevel);
-            var pActive = cmd.Parameters.AddWithValue("active", true);
+            var pId = cmd.AddParameter("id", userId);
+            var pAccess = cmd.AddParameter("access", accessLevel);
+            var pActive = cmd.AddParameter("active", true);
             cmd.CommandText = $"insert into {TPermissions} (UserId, AccessLevel, Active) values (@{pId}, @{pAccess}, @{pActive})";
             cmd.ExecuteNonQuery();
         }

@@ -1,4 +1,3 @@
-using eVybir.Infra;
 using eVybir.Pages.Shared;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,18 +9,7 @@ namespace eVybir.Pages
 
         public IActionResult OnPostLogin(string userId)
         {
-            if (!string.IsNullOrEmpty(userId))
-            {
-                var identity = Login.LogIn(userId);
-                if (identity != null)
-                {
-                    HttpContext.Response.Cookies.Append(Login.COOKIE, Login.Serialize(identity));
-                }
-            }
-            else
-            {
-                HttpContext.Response.Cookies.Delete(Login.COOKIE);
-            }
+            LoginUser(userId);
             return RedirectToPage(Location<Pages_Index>());
         }
     }

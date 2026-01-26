@@ -26,7 +26,7 @@ namespace eVybir.Pages
         public IActionResult OnGet(int? id)
         {
             Campaigns = CampaignsDb.GetPastOrCurrentCampaigns().ToDictionary(db => db.Key, db => db.Entity);
-            if (!id.HasValue && !Request.Path.Value!.EndsWith("/"))
+            if (!id.HasValue && !Request.Path.Value!.EndsWith('/'))
                 return Redirect(Location<Pages_Report>() + "/");
             CurrentCampaignId = id;
             if (id.HasValue)

@@ -73,7 +73,7 @@ namespace eVybir.Infra
             UnmappedMemberHandling = System.Text.Json.Serialization.JsonUnmappedMemberHandling.Skip
         };
 
-        private static readonly byte[] key = [116, 168, 1, 25, 199, 33, 175, 233, 14, 182, 151, 100, 242, 173, 201, 157, 71, 3, 12, 227, 86, 244, 8, 68, 51, 35, 63, 169, 151, 216, 61, 99];
+        private static readonly byte[] key = AppCfg.EncryptionKey;
 
 
         public static Login? Deserialize(string input)

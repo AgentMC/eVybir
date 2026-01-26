@@ -8,6 +8,22 @@ namespace eVybir.Pages.Shared
 {
     public abstract class LoginAwarePageBase : PageModel
     {
+        #region Authentication
+        public void LoginUser(string userId)
+        {
+            if (!string.IsNullOrEmpty(userId))
+            {
+                var identity = Login.LogIn(userId);
+                if (identity != null) //success
+                {
+                    HttpContext.Response.Cookies.Append(Login.COOKIE, Login.Serialize(identity));
+                    LoginData = identity;
+                    return;
+                }
+            }
+            HttpContext.Response.Cookies.Delete(Login.COOKIE);
+        }
+
         private bool _loginCheckDone = false;
         public Login? LoginData
         {
@@ -32,12 +48,13 @@ namespace eVybir.Pages.Shared
                 }
                 return field;
             }
+            private set { field = value; }
         }
 
         public bool IsLoggedIn { get => LoginData != null; }
+        #endregion
 
-        public abstract string Title { get; }
-
+        #region Authorization
         protected bool CheckRole<T>(out IActionResult? result) where T : Page => CheckRole(typeof(T), out result);
 
         protected bool CheckRole(Type t, out IActionResult? result)
@@ -55,6 +72,10 @@ namespace eVybir.Pages.Shared
             result = null;
             return true;
         }
+        #endregion
+
+        #region Metadata
+        public abstract string Title { get; }
 
         public void SetPageData(ViewDataDictionary viewData)
         {
@@ -62,7 +83,9 @@ namespace eVybir.Pages.Shared
             viewData[nameof(IsLoggedIn)] = IsLoggedIn;
             viewData[nameof(Title)] = Title;
         }
+        #endregion
 
+        #region Location
         private static readonly ConcurrentDictionary<Type, string> Locations = new();
 
         protected static string Location(Type t)
@@ -77,5 +100,6 @@ namespace eVybir.Pages.Shared
         }
 
         public static string Location<T>() where T : Page => Location(typeof(T));
+        #endregion
     }
 }

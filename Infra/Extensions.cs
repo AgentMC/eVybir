@@ -58,5 +58,10 @@ namespace eVybir.Infra
                 }
             }
         }
+
+        extension(WebApplication wa)
+        {
+            public void SetupAppCfg() => AppCfg.SetUp(wa.Configuration);
+        }
     }
 }

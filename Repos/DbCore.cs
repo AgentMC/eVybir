@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using eVybir.Infra;
+using Microsoft.Data.SqlClient;
 
 namespace eVybir.Repos
 {
@@ -13,10 +14,7 @@ namespace eVybir.Repos
 
         public static SqlConnection OpenConnection()
         {
-            var conn = new SqlConnection
-            {
-                ConnectionString = @"Server=(local);Database=eVybir;Integrated Security=True;Persist Security Info=False;Pooling=False;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Application Name=eVybir;Command Timeout=100"
-            };
+            var conn = new SqlConnection { ConnectionString = AppCfg.ConnectionString };
             conn.Open();
             return conn;
         }
