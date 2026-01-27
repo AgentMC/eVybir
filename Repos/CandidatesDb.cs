@@ -27,8 +27,8 @@ select count(cc.Id)
 from CampaignCandidates cc
 	join Campaigns cs
 		on cc.CampaignId = cs.Id
-		and datediff_big(ss , CURRENT_TIMESTAMP, cs.StartTime)/86400.0 < 1.0
-		and cc.CandidateId = @{pId}";
+where cs.StartTime <= dateadd(day, 1, CURRENT_TIMESTAMP)
+	and cc.CandidateId = @{pId}";
             return (int)cmd.ExecuteScalar() > 0;
         }
 
@@ -44,7 +44,7 @@ from {TCandidates} c
 		from {TCCandidates} cc
 		    join {TCampaigns} cs
 			    on cc.CampaignId = cs.Id
-			    and datediff_big(ss , CURRENT_TIMESTAMP, cs.StartTime)/86400.0 < 1.0
+		where cs.StartTime <= dateadd(day, 1, CURRENT_TIMESTAMP)
 	) t
 	on Id = CandidateId
 group by Id, Name, Date, Description, EntryType";

@@ -101,7 +101,7 @@ order by DisplayOrder";
             var pRowCount = cmd.Parameters.Add(new SqlParameter("rc", System.Data.SqlDbType.Int) { Direction = System.Data.ParameterDirection.Output });
             var pTicketId = cmd.AddParameter("ticketId", ticketId);
             var pNow = cmd.AddParameter("now", DateTime.UtcNow.AsKyivTimeZone());
-            command.AppendLine($"update {TTickets} set CommittedDate=@{pNow} where Id=@{pTicketId} and CommittedDate is NULL;"); //we only update an uncommitted ticket
+            command.AppendLine($"update {TTickets} with (UPDLOCK, ROWLOCK) set CommittedDate=@{pNow} where Id=@{pTicketId} and CommittedDate is NULL;"); //we only update an uncommitted ticket
 
             command.AppendLine($"set @{pRowCount} = @@ROWCOUNT;\r\nif @{pRowCount} = 0 ROLLBACK TRANSACTION else BEGIN"); //was there an uncommitted ticket? if yes let's insert the vote(s), otherwise rollback
 
@@ -109,6 +109,7 @@ order by DisplayOrder";
             command.AppendLine($"insert into {TVotes} (Id, CampaignId, PreferenceIdx, CampaignCandidateId) values");
             for (int i = 0; i < voteIds.Length; i++)
             {
+                //consider: add hash(ticketId+PrefIdx) column and add a Unique constraint on it?
                 var pVoteId = cmd.AddParameter("voteId" + i, Guid.CreateVersion7());
                 var pPrefIdx = cmd.AddParameter("prefId" + i, i);
                 var pParticipant = cmd.AddParameter("partId" + i, voteIds[i]);
