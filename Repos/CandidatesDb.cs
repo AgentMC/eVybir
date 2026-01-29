@@ -9,7 +9,7 @@ namespace eVybir.Repos
         {
             using var conn = await OpenConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = $"select Id, Name, Date, Description, EntryType from {TCandidates}";
+            cmd.CommandText = $"select Id, Name, Date, Description, EntryType from {TCandidates} order by Name";
             using var reader = await cmd.ExecuteReaderAsync();
             while (reader.Read())
             {

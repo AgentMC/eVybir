@@ -41,7 +41,7 @@ namespace eVybir.Pages
                 }
                 CurrentCampaign = campaign;
                 ShowOnlyList = false;
-                Candidates = await CandidatesDb.GetCandidates().OrderBy(c => c.Entity.Name).ToListAsync();
+                Candidates = await CandidatesDb.GetCandidates().ToListAsync();
                 ParticipantsRoot = await CampaignCandidatesDb.GetParticipantsByCampaignFlat(CurrentCampaignId).ToListAsync();
                 IncludedCandidateIds = ParticipantsRoot.Select(p => p.CandidateId).ToArray();
                 SortedCandidateIds = Candidates.Select(c => c.Key).ToArray();
