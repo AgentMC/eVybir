@@ -17,18 +17,18 @@ namespace eVybir.Pages
             return Page();
         }
 
-        public IActionResult OnPostRegister(int id, int campaignId)
+        public async Task<IActionResult> OnPostRegister(int id, int campaignId)
         {
             if (!CheckRole<Pages_CheckVoter>(out var failed)) return failed!;
-            TicketsDb.Register(campaignId, id, true);
+            await TicketsDb.Register(campaignId, id, true);
             return RedirectToPage(Location<Pages_CheckVoter>());
         }
 
-        public IActionResult OnPostCancel(int id, Guid ticketId)
+        public async Task<IActionResult> OnPostCancel(int id, Guid ticketId)
         {
             if (!CheckRole<Pages_CheckVoter>(out var failed))
                 return failed!;
-            else if (TicketsDb.CancelTicket(ticketId, id))
+            else if (await TicketsDb.CancelTicket(ticketId, id))
                 return RedirectToPage(Location<Pages_CheckVoter>());
             else
                 return BadRequest("Ticket was not cancelled, try again");

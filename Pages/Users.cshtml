@@ -17,7 +17,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var user in PermissionsDb.GetUsers())
+            @await foreach (var user in PermissionsDb.GetUsers())
             {
                 <tr>
                     <td>@user.Entity.Id</td>

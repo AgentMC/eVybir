@@ -16,26 +16,27 @@ namespace eVybir.Pages
 
         public int CampaignId { get; set; }
 
-        public IActionResult OnGet(Guid id)
+        public async Task<IActionResult> OnGet(Guid id)
         {
             if (!CheckRole<Pages_Vote>(out var failed)) return failed!;
-            var grp = TicketsDb.GetBulletinByTicket(id)
-                               .GroupBy(b => b.Location.GroupId);
-            CampaignId = grp.First().First().CampaignId;
-            Bulletin = new(CampaignsDb.GetCampaignById(CampaignId),
+            var grp = await TicketsDb.GetBulletinByTicket(id)
+                                     .GroupBy(b => b.Location.GroupId)
+                                     .ToListAsync();
+            CampaignId = grp[0].First().CampaignId;
+            Bulletin = new(await CampaignsDb.GetCampaignById(CampaignId),
                            grp.Single(g => g.Key == null)
-                                     .Select(b => new BulletinHierarchy(b,
-                                                                        grp.FirstOrDefault(g => g.Key == b.Location.CandidateId)?.ToArray() ?? []))
-                                     .ToArray());
+                              .Select(b => new BulletinHierarchy(b,
+                                                                 grp.FirstOrDefault(g => g.Key == b.Location.CandidateId)?.ToArray() ?? []))
+                              .ToArray());
             IsPartyListBasedElection = Bulletin.PrimaryEntries.Any(e => e.Children.Length > 0);
             return Page();
         }
 
-        public IActionResult OnPost(Guid id, int campaignId, string castIds)
+        public async Task<IActionResult> OnPost(Guid id, int campaignId, string castIds)
         {
             if (!CheckRole<Pages_Vote>(out var failed)) 
                 return failed!;
-            else if (TicketsDb.Vote(id, campaignId, JsonSerializer.Deserialize<int[]>(castIds)!))
+            else if (await TicketsDb.Vote(id, campaignId, JsonSerializer.Deserialize<int[]>(castIds)!))
                 return Redirect(Location<Pages_Register>());
             else
                 return BadRequest("The vote was not cast, try again");

@@ -10,18 +10,18 @@ namespace eVybir.Pages
 
         public override string Title => "Бюлетені";
 
-        public IActionResult OnPostRegister(int campaignId) 
+        public async Task<IActionResult> OnPostRegister(int campaignId) 
         {
             if (!CheckRole(out var failed)) return failed!;
-            TicketsDb.Register(campaignId, LoginData!.Id, false);
+            await TicketsDb.Register(campaignId, LoginData!.Id, false);
             return BackToList();
         }
 
-        public IActionResult OnPostCancel(Guid ticketId) 
+        public async Task<IActionResult> OnPostCancel(Guid ticketId) 
         {
             if (!CheckRole(out var failed))
                 return failed!;
-            else if (TicketsDb.CancelTicket(ticketId, LoginData!.Id))
+            else if (await TicketsDb.CancelTicket(ticketId, LoginData!.Id))
                 return BackToList();
             else
                 return BadRequest("Ticket was not cancelled, try again");

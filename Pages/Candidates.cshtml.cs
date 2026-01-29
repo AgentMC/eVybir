@@ -11,32 +11,31 @@ namespace eVybir.Pages
 
         public override Type PageType => typeof(Pages_Candidates);
 
-        public IActionResult OnPost(int candId, string candName, DateTime? candDate, string? candDesc, Candidate.EntryType candKind) 
+        public async Task<IActionResult> OnPost(int candId, string candName, DateTime? candDate, string? candDesc, Candidate.EntryType candKind) 
         {
             if (!CheckRole(out var failed)) return failed!;
             if (candId == DEFAULT_ID)
             {
-                CandidatesDb.AddCandidate(candName, candDate, candDesc, candKind);
+                await CandidatesDb.AddCandidate(candName, candDate, candDesc, candKind);
             }
             else
             {
-                if (!CheckCanModify(candId, false, out var fault)) return fault!;
-                CandidatesDb.UpdateCandidate(candId, candName, candDate, candDesc, candKind);
+                if (!CheckCanModify(await CandidatesDb.GetCandidateHasPastUsesById(candId), false, out var fault)) return fault!;
+                await CandidatesDb.UpdateCandidate(candId, candName, candDate, candDesc, candKind);
             }
             return BackToList();
         }
 
-        public IActionResult OnPostDelete(int id)
+        public async Task<IActionResult> OnPostDelete(int id)
         {
             if (!CheckRole(out var failed)) return failed!;
-            if (!CheckCanModify(id, true, out var fault)) return fault!;
-            CandidatesDb.DeleteCandidate(id);
+            if (!CheckCanModify(await CandidatesDb.GetCandidateHasPastUsesById(id), true, out var fault)) return fault!;
+            await CandidatesDb.DeleteCandidate(id);
             return BackToList();
         }
 
-        private bool CheckCanModify(int id, bool deleting, out IActionResult? fault)
+        private bool CheckCanModify(bool isUsed, bool deleting, out IActionResult? fault)
         {
-            var isUsed = CandidatesDb.GetCandidateHasPastUsesById(id);
             if (isUsed && (deleting || LoginData?.AccessLevel != Login.AccessLevelCode.Admin))
             {
                 fault = BadRequest("Unable to edit candidate, used in past Campaigns!");

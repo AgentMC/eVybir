@@ -7,9 +7,9 @@ namespace eVybir.Pages
     {
         public override string Title => "Home page";
 
-        public IActionResult OnPostLogin(string userId)
+        public async Task<IActionResult> OnPostLogin(string userId)
         {
-            LoginUser(userId);
+            await LoginUser(userId);
             return RedirectToPage(Location<Pages_Index>());
         }
     }

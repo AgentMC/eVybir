@@ -17,30 +17,30 @@ namespace eVybir.Pages
 
         public TicketStats TicketStats { get; private set; }
 
-        public DbWrapped<int, Candidate>[] VoteStats { get; private set; }
+        public List<DbWrapped<int, Candidate>> VoteStats { get; private set; }
 
-        public GroupMembersStats[]? GroupMembersStats { get; set; }
+        public List<GroupMembersStats>? GroupMembersStats { get; set; }
 
         public int MaxVote { get; set; }
 
-        public IActionResult OnGet(int? id)
+        public async Task <IActionResult> OnGet(int? id)
         {
-            Campaigns = CampaignsDb.GetPastOrCurrentCampaigns().ToDictionary(db => db.Key, db => db.Entity);
             if (!id.HasValue && !Request.Path.Value!.EndsWith('/'))
                 return Redirect(Location<Pages_Report>() + "/");
+            Campaigns = await CampaignsDb.GetPastOrCurrentCampaigns().ToDictionaryAsync(db => db.Key, db => db.Entity);
             CurrentCampaignId = id;
             if (id.HasValue)
             {
                 if (!Campaigns.TryGetValue(id.Value, out Campaign? thisCampaign))
                     return NotFound();
-                CampaignIsActive = thisCampaign.End > DateTime.UtcNow;
-                TicketStats = ReportDb.GetTicketStats(id.Value);
-                VoteStats = ReportDb.GetVoteStats(id.Value).ToArray();
+                CampaignIsActive = thisCampaign.End > DateTime.UtcNow; //.state == Ongoing does 2 datetime comparisons, this line does it in 1
+                TicketStats = await ReportDb.GetTicketStats(id.Value);
+                VoteStats = await ReportDb.GetVoteStats(id.Value).ToListAsync();
                 TicketStats.VotesCast = VoteStats.Sum(v => v.Key);
-                MaxVote = VoteStats.Length > 0 ? VoteStats.Max(v => v.Key) : 0;
-                if (ReportDb.IsCampaignIncludingGroupMembers(id.Value))
+                MaxVote = VoteStats.Count > 0 ? VoteStats.Max(v => v.Key) : 0;
+                if (await ReportDb.IsCampaignIncludingGroupMembers(id.Value))
                 {
-                    GroupMembersStats = ReportDb.GetGroupMemberStats(id.Value).ToArray();
+                    GroupMembersStats = await ReportDb.GetGroupMemberStats(id.Value).ToListAsync();
                 }
             }
             return Page();

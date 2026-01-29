@@ -4,9 +4,9 @@ namespace eVybir.Repos
 {
     public class ReportDb : DbCore
     {
-        public static TicketStats GetTicketStats(int campaignId)
+        public static async Task<TicketStats> GetTicketStats(int campaignId)
         {
-            using var conn = OpenConnection();
+            using var conn = await OpenConnection();
             using var cmd = conn.CreateCommand();
             var pCampaignId = cmd.AddParameter("campaignId", campaignId);
             cmd.CommandText = $@"
@@ -15,7 +15,7 @@ from {TTickets}
 where CampaignId = @{pCampaignId}
 group by IsOffline";
             int offline = 0, online = 0, onlineCommitted = 0;
-            using var reader = cmd.ExecuteReader();
+            using var reader = await cmd.ExecuteReaderAsync();
             while (reader.Read())
             {
                 if ((bool)reader[0]) //offline
@@ -32,9 +32,9 @@ group by IsOffline";
             return new(offline, online, onlineCommitted);
         }
 
-        public static IEnumerable<DbWrapped<int, Candidate>> GetVoteStats(int campaignId)
+        public static async IAsyncEnumerable<DbWrapped<int, Candidate>> GetVoteStats(int campaignId)
         {
-            using var conn = OpenConnection();
+            using var conn = await OpenConnection();
             using var cmd = conn.CreateCommand();
             var pCampaignId = cmd.AddParameter("campaignId", campaignId);
             cmd.CommandText = $@"
@@ -54,25 +54,25 @@ from (
 		on t.Id = c3.Id
 group by t.Id, c3.Name, c3.Date
 order by Count desc";
-            using var reader = cmd.ExecuteReader();
+            using var reader = await cmd.ExecuteReaderAsync();
             while (reader.Read())
             {
                 yield return new((int)reader[0], new((string)reader[1], reader.As<DateTime?>(2), null, 0));
             }
         }
 
-        public static bool IsCampaignIncludingGroupMembers(int campaignId)
+        public static async Task<bool> IsCampaignIncludingGroupMembers(int campaignId)
         {
-            using var conn = OpenConnection();
+            using var conn = await OpenConnection();
             using var cmd = conn.CreateCommand();
             var pCampaignId = cmd.AddParameter("campaignId", campaignId);
             cmd.CommandText = $"select top 1 1 from {TCCandidates} where CampaignId = @{pCampaignId} and GroupId is not null";
-            return cmd.ExecuteScalar() != null;
+            return await cmd.ExecuteScalarAsync() != null;
         }
 
-        public static IEnumerable<GroupMembersStats> GetGroupMemberStats(int campaignId)
+        public static async IAsyncEnumerable<GroupMembersStats> GetGroupMemberStats(int campaignId)
         {
-            using var conn = OpenConnection();
+            using var conn = await OpenConnection();
             using var cmd = conn.CreateCommand();
             var pCampaignId = cmd.AddParameter("campaignId", campaignId);
             cmd.CommandText = $@"
@@ -91,7 +91,7 @@ from (
 ) t
 group by Id, VotedName, VotedCandidateDate, GroupName
 order by GroupName asc, Count desc";
-            using var reader = cmd.ExecuteReader();
+            using var reader = await cmd.ExecuteReaderAsync();
             while (reader.Read())
             {
                 yield return new((string)reader[0], reader.As<DateTime?>(1), (string)reader[2], (int)reader[3]);

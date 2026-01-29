@@ -12,10 +12,10 @@ namespace eVybir.Repos
                             TPermissions =  "Permissions",
                             TVotes =        "Votes";
 
-        public static SqlConnection OpenConnection()
+        public static async Task<SqlConnection> OpenConnection()
         {
             var conn = new SqlConnection { ConnectionString = AppCfg.ConnectionString };
-            conn.Open();
+            await conn.OpenAsync();
             return conn;
         }
     }   

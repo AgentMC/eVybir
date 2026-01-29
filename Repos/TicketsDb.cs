@@ -6,9 +6,9 @@ namespace eVybir.Repos
 {
     public class TicketsDb : DbCore
     {
-        public static IEnumerable<CampaignState> GetUserCampaignsStatus(int userId, bool onlyActive)
+        public static async IAsyncEnumerable<CampaignState> GetUserCampaignsStatus(int userId, bool onlyActive)
         {
-            using var conn = OpenConnection();
+            using var conn = await OpenConnection();
             using var cmd = conn.CreateCommand();
             var pUserId = cmd.AddParameter("userId", userId);
             var pNow = cmd.AddParameter("dtNow", DateTime.Now);
@@ -23,7 +23,7 @@ where c.StartTime <= @{pNow}
     {(onlyActive? $"and c.EndTime > @{pNow}" : "")}
     and (t.UserId = @{pUserId} or t.UserId is null)
 order by c.StartTime";
-            using var reader = cmd.ExecuteReader();
+            using var reader = await cmd.ExecuteReaderAsync();
             while (reader.Read())
             {
                 var ticketId = reader.As<Guid?>(0);
@@ -38,9 +38,9 @@ order by c.StartTime";
             }
         }
 
-        public static void Register(int campaignId, int userId, bool isOffline)
+        public static async Task Register(int campaignId, int userId, bool isOffline)
         {
-            using var conn = OpenConnection();
+            using var conn = await OpenConnection();
             using var cmd = conn.CreateCommand();
             var pUserId = cmd.AddParameter("userId", userId);
             var pCampaignId = cmd.AddParameter("campaignId", campaignId);
@@ -49,22 +49,22 @@ order by c.StartTime";
             cmd.CommandText = $@"
 insert into {TTickets} (Id,                        UserId,     CampaignId,     CreatedDate, IsOffline) 
                 values ('{Guid.CreateVersion7()}', @{pUserId}, @{pCampaignId}, @{pNow},     @{pOffline})";
-            cmd.ExecuteNonQuery();
+            await cmd.ExecuteNonQueryAsync();
         }
 
-        public static bool CancelTicket(Guid ticketId, int userId)
+        public static async Task<bool> CancelTicket(Guid ticketId, int userId)
         {
-            using var conn = OpenConnection();
+            using var conn = await OpenConnection();
             using var cmd = conn.CreateCommand();
             var pTicketId = cmd.AddParameter("tId", ticketId);
             var pUserId = cmd.AddParameter("userId", userId);
             cmd.CommandText = $"delete from {TTickets} where Id=@{pTicketId} and UserId = @{pUserId}";
-            return cmd.ExecuteNonQuery() > 0;
+            return await cmd.ExecuteNonQueryAsync() > 0;
         }
 
-        public static IEnumerable<BulletinEntry> GetBulletinByTicket(Guid ticketId)
+        public static async IAsyncEnumerable<BulletinEntry> GetBulletinByTicket(Guid ticketId)
         {
-            using var conn = OpenConnection();
+            using var conn = await OpenConnection();
             using var cmd = conn.CreateCommand();
             var pTicketId = cmd.AddParameter("ticketId", ticketId);
             cmd.CommandText = $@"
@@ -75,7 +75,7 @@ from {TCCandidates} cc
 		on cc.CandidateId = c.Id
 		and cc.CampaignId = (select CampaignId from {TTickets} where Id = @{pTicketId})
 order by DisplayOrder";
-            using var reader = cmd.ExecuteReader();
+            using var reader = await cmd.ExecuteReaderAsync();
             while (reader.Read())
             {
                 yield return new((int)reader[0],
@@ -92,9 +92,9 @@ order by DisplayOrder";
             }
         }
 
-        public static bool Vote(Guid ticketId, int campaignId, int[] voteIds)
+        public static async Task<bool> Vote(Guid ticketId, int campaignId, int[] voteIds)
         {
-            using var conn = OpenConnection();
+            using var conn = await OpenConnection();
             using var cmd = conn.CreateCommand();
             StringBuilder command = new("SET XACT_ABORT ON;\r\nBEGIN TRANSACTION;\r\n"); //on error e.g. dupe keys transaction will be aborted and rolled back
 
@@ -120,7 +120,7 @@ order by DisplayOrder";
             command.AppendLine($"COMMIT TRANSACTION;\r\nEND;\r\nselect @{pRowCount}"); //if all is good, commit both changes. Return the number of rows, zero meaning no vote was cast.
 
             cmd.CommandText = command.ToString();
-            return (int?)cmd.ExecuteScalar() != 0;
+            return (int)(await cmd.ExecuteScalarAsync())! != 0;
         }
     }
 }

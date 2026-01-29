@@ -9,11 +9,11 @@ namespace eVybir.Pages.Shared
     public abstract class LoginAwarePageBase : PageModel
     {
         #region Authentication
-        public void LoginUser(string userId)
+        public async Task LoginUser(string userId)
         {
             if (!string.IsNullOrEmpty(userId))
             {
-                var identity = Login.LogIn(userId);
+                var identity = await Login.LogIn(userId);
                 if (identity != null) //success
                 {
                     HttpContext.Response.Cookies.Append(Login.COOKIE, Login.Serialize(identity));

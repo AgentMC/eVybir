@@ -48,11 +48,11 @@ namespace eVybir.Infra
 
         public const string COOKIE = "eVybirId";
 
-        public static Login? LogIn(string userId)
+        public static async Task<Login?> LogIn(string userId)
         {
             if (int.TryParse(userId, out var loginId))
             {
-                return Create(loginId, (AccessLevelCode?)PermissionsDb.GetRoleById(loginId), true);
+                return Create(loginId, (AccessLevelCode?)await PermissionsDb.GetRoleById(loginId), true);
             }
             return null;
         }

@@ -11,17 +11,17 @@ namespace eVybir.Pages
 
         public override Type PageType => typeof(Pages_Users);
 
-        public IActionResult OnPostToggle(int id, bool currentState) 
+        public async Task<IActionResult> OnPostToggle(int id, bool currentState) 
         {
             if (!CheckRole(out var failed)) return failed!;
-            PermissionsDb.SetActive(id, !currentState);
+            await PermissionsDb.SetActive(id, !currentState);
             return BackToList();
         }
 
-        public IActionResult OnPost(int userId, Login.AccessLevelCode userRole)
+        public async Task<IActionResult> OnPost(int userId, Login.AccessLevelCode userRole)
         {
             if (!CheckRole(out var failed)) return failed!;
-            PermissionsDb.AddUser(userId, userRole);
+            await PermissionsDb.AddUser(userId, userRole);
             return BackToList();
         }
     }

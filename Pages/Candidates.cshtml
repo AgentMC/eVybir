@@ -17,7 +17,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var cand in CandidatesDb.GetCandidatesWithUse())
+            @await foreach (var cand in CandidatesDb.GetCandidatesWithUse())
             {
                 var cData = cand.Entity;
                 var cId = cand.Key.Item1;

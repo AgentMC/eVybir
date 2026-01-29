@@ -35,7 +35,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var ct in TicketsDb.GetUserCampaignsStatus(Model.VoterId.Value, true))
+                @await foreach (var ct in TicketsDb.GetUserCampaignsStatus(Model.VoterId.Value, true))
                 {
                     <tr>
                         <td>@ct.CampaignName</td>

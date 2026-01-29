@@ -10,7 +10,7 @@ namespace eVybir.Pages
     {
         public override string Title => "Призначити кандидатів";
 
-        public IEnumerable<DbWrapped<int, Campaign>> Campaigns { get; private set; }
+        public List<DbWrapped<int, Campaign>> Campaigns { get; private set; }
 
         public bool ShowOnlyList { get; private set; } = true;
 
@@ -27,22 +27,22 @@ namespace eVybir.Pages
         public Campaign CurrentCampaign{ get; private set; }
 
 
-        public IActionResult OnGet(int? id)
+        public async Task<IActionResult> OnGet(int? id)
         {
             if (!CheckRole<Pages_ManageCampaign>(out var failed)) return failed!;
-            Campaigns = CampaignsDb.GetAllCampaigns();
+            Campaigns = await CampaignsDb.GetAllCampaigns().ToListAsync();
             if (id.HasValue)
             {
                 CurrentCampaignId = id.Value;
-                CurrentCampaign = Campaigns.FirstOrDefault(c => c.Key == CurrentCampaignId)?.Entity;
-                if (CurrentCampaign == null) // wrong, race condition etc.
+                var campaign = Campaigns.FirstOrDefault(c => c.Key == CurrentCampaignId)?.Entity;
+                if (campaign == null) // wrong, race condition etc.
                 {
                     return RedirectToPage(Location<Pages_ManageCampaign>());
                 }
-
+                CurrentCampaign = campaign;
                 ShowOnlyList = false;
-                Candidates = CandidatesDb.GetCandidates().OrderBy(c => c.Entity.Name).ToList();
-                ParticipantsRoot = CampaignCandidatesDb.GetParticipantsByCampaignFlat(CurrentCampaignId).ToList();
+                Candidates = await CandidatesDb.GetCandidates().OrderBy(c => c.Entity.Name).ToListAsync();
+                ParticipantsRoot = await CampaignCandidatesDb.GetParticipantsByCampaignFlat(CurrentCampaignId).ToListAsync();
                 IncludedCandidateIds = ParticipantsRoot.Select(p => p.CandidateId).ToArray();
                 SortedCandidateIds = Candidates.Select(c => c.Key).ToArray();
                 for (int i = ParticipantsRoot.Count - 1; i >= 0; i--)
@@ -58,11 +58,11 @@ namespace eVybir.Pages
             return Page();
         }
 
-        public IActionResult OnPost(int? id, string inclusionModel)
+        public async Task<IActionResult> OnPost(int? id, string inclusionModel)
         {
             if (!CheckRole<Pages_ManageCampaign>(out var failed)) return failed!;
             if (!id.HasValue) return NotFound();
-            var c = CampaignsDb.GetCampaignById(id.Value);
+            var c = await CampaignsDb.GetCampaignById(id.Value);
             if (c.State != Campaign.CampaignState.Future) return BadRequest("Unable to edit, campaign state is " + c.UfState);
             var updateModel = JsonSerializer.Deserialize<List<Participant>>(inclusionModel)!;
             for (int i = updateModel.Count-1; i >= 0 ; i--)
@@ -74,7 +74,7 @@ namespace eVybir.Pages
                     chCol.RemoveAt(j);
                 }
             }
-            CampaignCandidatesDb.UpdateCampaignData(id.Value, updateModel);
+            await CampaignCandidatesDb.UpdateCampaignData(id.Value, updateModel);
             return RedirectToPage(Location<Pages_ManageCampaign>(), new { id = (int?)null });
         }
     }

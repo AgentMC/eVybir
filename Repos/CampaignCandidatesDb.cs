@@ -5,22 +5,22 @@ namespace eVybir.Repos
 {
     public class CampaignCandidatesDb : DbCore
     {
-        public static IEnumerable<Participant> GetParticipantsByCampaignFlat(int campaignId)
+        public static async IAsyncEnumerable<Participant> GetParticipantsByCampaignFlat(int campaignId)
         {
-            using var conn = OpenConnection();
+            using var conn = await OpenConnection();
             using var cmd = conn.CreateCommand();
             var pId = cmd.AddParameter("id", campaignId);
             cmd.CommandText = $"select Id, CandidateId, GroupId, DisplayOrder from {TCCandidates} where CampaignId = @{pId} order by DisplayOrder";
-            using var reader = cmd.ExecuteReader();
+            using var reader = await cmd.ExecuteReaderAsync();
             while (reader.Read())
             {
                 yield return new((int)reader[1], reader.As<int?>(2), (int)reader[3]);
             }
         }
 
-        public static void UpdateCampaignData(int campaignId, IList<Participant> participants)
+        public static async Task UpdateCampaignData(int campaignId, IList<Participant> participants)
         {
-            using var conn = OpenConnection();
+            using var conn = await OpenConnection();
             using var cmd = conn.CreateCommand();
             var pId = cmd.AddParameter("id", campaignId);
             StringBuilder command = new($"delete from {TCCandidates} where CampaignId=@{pId};\r\n");
@@ -38,7 +38,7 @@ namespace eVybir.Repos
                 }
             }
             cmd.CommandText = command.ToString();
-            cmd.ExecuteNonQuery();
+            await cmd.ExecuteNonQueryAsync();
         }
     }
 }
