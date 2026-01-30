@@ -4,6 +4,6 @@ namespace eVybir.Pages
 {
     public class PrivacyModel : LoginAwarePageBase
     {
-        public override string Title => "Privacy Policy";
+        public override string Title => "Політика конфіденційності";
     }
 }
