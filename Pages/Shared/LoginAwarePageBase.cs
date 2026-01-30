@@ -16,7 +16,9 @@ namespace eVybir.Pages.Shared
                 var identity = await Login.LogIn(userId);
                 if (identity != null) //success
                 {
-                    HttpContext.Response.Cookies.Append(Login.COOKIE, Login.Serialize(identity));
+                    HttpContext.Response.Cookies.Append(Login.COOKIE, 
+                                                        Login.Serialize(identity), 
+                                                        new CookieOptions { Path = HttpContext.Request.PathBase, HttpOnly = true });
                     LoginData = identity;
                     return;
                 }
