@@ -60,7 +60,7 @@
         public static string ResolveName(int id)
         {
             var datasetId = id - 1;
-            if(datasetId < Dataset.Count) return Dataset[datasetId];
+            if(datasetId < Dataset.Count && datasetId >=0) return Dataset[datasetId];
             return Dataset[Random.Shared.Next(Dataset.Count)];
         }
 
