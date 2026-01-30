@@ -91,7 +91,7 @@ namespace eVybir.Pages.Shared
         protected static string Location(Type t)
         {
             if (Locations.TryGetValue(t, out var location)) return location;
-            const int prefix = 5;// "Pages".Length;
+            const int prefix = 6;// "Pages_".Length;
             var result = t.Name.Substring(prefix)
                           .Replace('_', '/')
                           .Split("#")[0];
