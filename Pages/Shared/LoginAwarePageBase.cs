@@ -11,19 +11,18 @@ namespace eVybir.Pages.Shared
         #region Authentication
         public async Task LoginUser(string userId)
         {
+            CookieOptions LoginCookieOptions = new() { Path = HttpContext.Request.PathBase, HttpOnly = true };
             if (!string.IsNullOrEmpty(userId))
             {
                 var identity = await Login.LogIn(userId);
                 if (identity != null) //success
                 {
-                    HttpContext.Response.Cookies.Append(Login.COOKIE, 
-                                                        Login.Serialize(identity), 
-                                                        new CookieOptions { Path = HttpContext.Request.PathBase, HttpOnly = true });
+                    HttpContext.Response.Cookies.Append(Login.COOKIE, Login.Serialize(identity), LoginCookieOptions);
                     LoginData = identity;
                     return;
                 }
             }
-            HttpContext.Response.Cookies.Delete(Login.COOKIE);
+            HttpContext.Response.Cookies.Delete(Login.COOKIE, LoginCookieOptions);
         }
 
         private bool _loginCheckDone = false;
