@@ -46,8 +46,6 @@ namespace eVybir.Infra
             return false;
         }
 
-        public const string COOKIE = "eVybirId";
-
         public static async Task<Login?> LogIn(string userId)
         {
             if (int.TryParse(userId, out var loginId))

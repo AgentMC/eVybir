@@ -9,6 +9,8 @@ namespace eVybir.Pages.Shared
     public abstract class LoginAwarePageBase : PageModel
     {
         #region Authentication
+        private const string COOKIE = "eVybirId";
+
         public async Task LoginUser(string userId)
         {
             CookieOptions LoginCookieOptions = new() { Path = HttpContext.Request.PathBase, HttpOnly = true };
@@ -17,12 +19,12 @@ namespace eVybir.Pages.Shared
                 var identity = await Login.LogIn(userId);
                 if (identity != null) //success
                 {
-                    HttpContext.Response.Cookies.Append(Login.COOKIE, Login.Serialize(identity), LoginCookieOptions);
+                    HttpContext.Response.Cookies.Append(COOKIE, Login.Serialize(identity), LoginCookieOptions);
                     LoginData = identity;
                     return;
                 }
             }
-            HttpContext.Response.Cookies.Delete(Login.COOKIE, LoginCookieOptions);
+            HttpContext.Response.Cookies.Delete(COOKIE, LoginCookieOptions);
         }
 
         private bool _loginCheckDone = false;
@@ -33,7 +35,7 @@ namespace eVybir.Pages.Shared
                 if (!_loginCheckDone)
                 {
                     _loginCheckDone = true;
-                    var cookieValue = HttpContext.Request.Cookies[Login.COOKIE];
+                    var cookieValue = HttpContext.Request.Cookies[COOKIE];
                     if (cookieValue != null)
                     {
                         try
